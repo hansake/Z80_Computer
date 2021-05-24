@@ -1,1 +1,1 @@
-Some photos of the Z80 computer board.
+Some photos of the Z80 computer board and test environment.

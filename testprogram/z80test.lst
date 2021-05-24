@@ -1,0 +1,31 @@
+# File z80test.z80
+0000			; Test Z80 computer 
+0000			 
+0000			HIRAM:	equ 0x8000 
+0000			 
+0000			; The program starts here at boot 
+0000			boot: 
+0000			 
+0000			; copy the main program to high RAM at 0x8000 
+0000 01 a2 12		        ld bc,prgend - prgstart 
+0003 21 19 00		        ld hl,prgstart 
+0006 11 00 80		        ld de,HIRAM 
+0009			cploop: 
+0009 78			        ld a,b 
+000a b1			        or c 
+000b ca 16 00		        jp z,cpend 
+000e 7e			        ld a,(hl) 
+000f 23			        inc hl 
+0010 12			        ld (de),a 
+0011 13			        inc de 
+0012 0b			        dec bc 
+0013 c3 09 00		        jp cploop 
+0016			cpend: 
+0016 c3 00 80			jp HIRAM	; jump to the copied code 
+0019			 
+0019			; Main program to load in high RAM 
+0019			prgstart: 
+0019			        incbin "z80hightest.bin" 
+12bb			prgend: 
+# End of file z80test.z80
+12bb

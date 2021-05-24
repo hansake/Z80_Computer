@@ -1,0 +1,147 @@
+
+*******************************************************************************
+                                  Z80_ADRSEL
+*******************************************************************************
+
+CUPL(WM)        5.0a Serial# 60008009
+Device          g22v10  Library DLIB-h-40-1
+Created         Fri Apr 30 14:43:14 2021
+Name            Z80_ADRSEL
+Partno          U2
+Revision        1.0
+Date            2021-04-30
+Designer        hal
+Company         atHome
+Assembly        None
+Location        None
+
+===============================================================================
+                            Expanded Product Terms
+===============================================================================
+
+BCLK.d  =>
+    !BCLK
+
+BCLK.ar  =>
+    0 
+
+BCLK.sp  =>
+    0 
+
+CTCCE =>
+    A2 & A3 & !A4 & !A5 & !A6 & !A7 & !IORQ
+
+MEMSEL.d  =>
+    IORQ & MEMSEL
+  # MEMSEL & WR
+  # A2 & MEMSEL
+  # A3 & MEMSEL
+  # A4 & MEMSEL
+  # A5 & MEMSEL
+  # A6 & MEMSEL
+  # A7 & MEMSEL
+  # A2 & !A3 & !A4 & !A5 & !A6 & !A7 & !IORQ & !WR
+
+MEMSEL.ar  =>
+    0 
+
+MEMSEL.sp  =>
+    0 
+
+PIOCE =>
+    !A2 & !A3 & A4 & !A5 & !A6 & !A7 & !IORQ
+
+RAMHCE =>
+    A15 & !MREQ
+
+RAMLCE =>
+    !A15 & MEMSEL & !MREQ
+
+RAMSEL =>
+    A2 & !A3 & !A4 & !A5 & !A6 & !A7 & !IORQ & !WR
+
+ROMCE =>
+    !A15 & !MEMSEL & !MREQ
+
+ROMSEL =>
+    !A2 & !A3 & !A4 & !A5 & !A6 & !A7 & !IORQ & !WR
+
+SIOCE =>
+    !A2 & A3 & !A4 & !A5 & !A6 & !A7 & !IORQ
+
+BCLK.oe  =>
+    1 
+
+CTCCE.oe  =>
+    1 
+
+MEMSEL.oe  =>
+    1 
+
+PIOCE.oe  =>
+    1 
+
+RAMHCE.oe  =>
+    1 
+
+RAMLCE.oe  =>
+    1 
+
+ROMCE.oe  =>
+    1 
+
+SIOCE.oe  =>
+    1 
+
+
+===============================================================================
+                                 Symbol Table
+===============================================================================
+
+Pin Variable                                    Pterms   Max     Min    
+Pol   Name              Ext     Pin     Type     Used   Pterms  Level   
+--- --------            ---     ---     ----    ------  ------  -----   
+
+    A2                          6        V        -       -       -     
+    A3                          7        V        -       -       -     
+    A4                          8        V        -       -       -     
+    A5                          9        V        -       -       -     
+    A6                          10       V        -       -       -     
+    A7                          11       V        -       -       -     
+    A15                         13       V        -       -       -     
+    BCLK                        23       V        -       -       -     
+    BCLK                d       23       X        1       8       1     
+    BCLK                ar      23       X        1       1       1     
+    BCLK                sp      23       X        1       1       1     
+    CLK                         1        V        -       -       -     
+    CTCCE                       18       V        1       16      1     
+    IORQ                        3        V        -       -       -     
+    MEMSEL                      16       V        -       -       -     
+    MEMSEL              d       16       X        9       12      1     
+    MEMSEL              ar      16       X        1       1       1     
+    MEMSEL              sp      16       X        1       1       1     
+    MREQ                        2        V        -       -       -     
+    PIOCE                       17       V        1       14      1     
+    RAMHCE                      20       V        1       14      1     
+    RAMLCE                      21       V        1       12      1     
+    RAMSEL                      0        I        1       -       -     
+    RD                          4        V        -       -       -     
+    ROMCE                       22       V        1       10      1     
+    ROMSEL                      0        I        1       -       -     
+    SIOCE                       19       V        1       16      1     
+    WR                          5        V        -       -       -     
+    BCLK                oe      23       D        1       1       0     
+    CTCCE               oe      18       D        1       1       0     
+    MEMSEL              oe      16       D        1       1       0     
+    PIOCE               oe      17       D        1       1       0     
+    RAMHCE              oe      20       D        1       1       0     
+    RAMLCE              oe      21       D        1       1       0     
+    ROMCE               oe      22       D        1       1       0     
+    SIOCE               oe      19       D        1       1       0     
+
+
+LEGEND    D : default variable         F : field      G : group
+          I : intermediate variable    N : node       M : extended node
+          U : undefined                V : variable   X : extended variable
+          T : function
+

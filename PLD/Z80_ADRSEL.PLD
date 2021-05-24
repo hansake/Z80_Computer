@@ -1,0 +1,69 @@
+Name            Z80_ADRSEL;
+Partno          U2;
+Revision        1.0;
+Date            2021-04-30;
+Designer        hal;
+Company         atHome;
+Location        None;
+Assembly        None;
+Device          G22V10;
+
+/*
+ * Inputs: CPU clock, memory and io access signal and addresses
+ */
+Pin 1 = CLK;
+Pin 2 = MREQ;
+Pin 3 = IORQ;
+Pin 4 = RD;
+Pin 5 = WR;
+Pin 6 = A2;
+Pin 7 = A3;
+Pin 8 = A4;
+Pin 9 = A5;
+Pin 10 = A6;
+Pin 11 = A7;
+Pin 13 = A15;
+
+/* Outputs: Serial clock to CTC, io and memory enable
+ * 
+ */
+Pin 23 = BCLK;
+Pin 22 = ROMCE;
+Pin 21 = RAMLCE;
+Pin 20 = RAMHCE;
+Pin 19 = SIOCE;
+Pin 18 = CTCCE;
+Pin 17 = PIOCE;
+Pin 16 = MEMSEL;
+
+/*
+ * Logic
+ */
+
+/* Divide clock frequency by 2  to get serial clock */
+
+BCLK.D = !BCLK;
+BCLK.SP = 'b'0;
+BCLK.AR = 'b'0;
+
+
+/* Decode I/O addresses to select EPROM or RAM in lower 32KB memory */
+
+ROMSEL = !IORQ & !WR & !A2 & !A3 & !A4 & !A5 & !A6 & !A7; /* Write to 0x00 - 0x03 selects EPROM */
+RAMSEL = !IORQ & !WR & A2 & !A3 & !A4 & !A5 & !A6 & !A7; /* Write to 0x04 - 0x07 selects RAM */
+
+MEMSEL.D = (MEMSEL & !ROMSEL)  # RAMSEL;
+MEMSEL.SP = 'b'0;
+MEMSEL.AR = 'b'0;
+
+/* Decode I/O chip addresses */
+
+SIOCE = !(!IORQ & !A2 & A3 & !A4 & !A5 & !A6 & !A7); /* Addresses 0x08 - 0x0b selects SIO */
+CTCCE = !(!IORQ & A2 & A3 & !A4 & !A5 & !A6 & !A7); /* Addresses 0x0c - 0x0f selects CTC */
+PIOCE = !(!IORQ & !A2 & !A3 & A4 & !A5 & !A6 & !A7); /* Addresses 0x10 - 0x13 selects PIO */
+
+/* Decode memory addresses */
+
+RAMHCE = !(!MREQ & A15); /* High 32K RAM */
+RAMLCE = !(!MREQ & !A15 & MEMSEL); /* Low 32K RAM if selected */
+ROMCE = !(!MREQ & !A15 & !MEMSEL); /* Low 32K EPROM if selected */

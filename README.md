@@ -8,7 +8,7 @@ I also found a Vero-Wire kit that I bought many years ago but never used until n
 The board contains:
 - Z80 CPU
 - Z80 CTC
-- Z80 SIO
+- Z80 SIO/0
 - Z80 PIO
 - EPROM 32KB
 - two RAM 32KB

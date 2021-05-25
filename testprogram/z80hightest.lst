@@ -1,0 +1,622 @@
+# File z80hightest.z80
+0000			; Test memory and i/o devices on home built Z80 computer board 
+0000			; 
+0000			; You are free to use, modify, and redistribute 
+0000			; this source code. The software is provided "as is", 
+0000			; without warranty of any kind. 
+0000			; Hastily Cobbled Together 2021 by Hans-Ake Lund. 
+0000			; 
+0000			 
+0000			; Character definitions 
+0000			; 
+0000			EOS:		equ 0x00	; End Of String 
+0000			CR:		equ 0x0d	; Carriage Return (ENTER) 
+0000			LF:		equ 0x0a	; Line Feed 
+0000			SPACE:		equ 0x20	; Space 
+0000			TAB:		equ 0x09	; Tabulator 
+0000			 
+0000			; Port definitions for switching between low EPROM and RAM 
+0000			MEMEPROM:	equ 0x00 
+0000			MEMLORAM:	equ 0x04 
+0000			 
+0000			; Port definitions for the SIO/0 chip 
+0000			SIO_BASE:	equ 0x08 
+0000			SIO_A_DATA:	equ SIO_BASE + 0 + 0 
+0000			SIO_A_CTRL:	equ SIO_BASE + 0 + 2 
+0000			SIO_B_DATA:	equ SIO_BASE + 1 + 0 
+0000			SIO_B_CTRL:	equ SIO_BASE + 1 + 2 
+0000			 
+0000			; Port definitions for the CTC chip 
+0000			CTC_BASE:	equ 0x0c 
+0000			CTC_CH0:	equ CTC_BASE + 0 
+0000			CTC_CH1:	equ CTC_BASE + 1 
+0000			CTC_CH2:	equ CTC_BASE + 2 
+0000			CTC_CH3:	equ CTC_BASE + 3 
+0000			 
+0000			; Port definitions for the PIO chip 
+0000			PIO_BASE:	equ 0x10 
+0000			PIO_A_DATA:	equ PIO_BASE + 0 + 0 
+0000			PIO_A_CTRL:	equ PIO_BASE + 0 + 2 
+0000			PIO_B_DATA:	equ PIO_BASE + 1 + 0 
+0000			PIO_B_CTRL:	equ PIO_BASE + 1 + 2 
+0000			 
+0000			; Divide constant in CTC to get an approximate baudrate of 9600 
+0000			; To get 9600 baud with a 4MHz xtal oscillator the divide constant 
+0000			; should be 4000000/(9600*2*16) = 13.0208 
+0000			; Using the CTC divider constant set to 13 will give a baud-rate 
+0000			; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough. 
+0000			; This is tested and works with a 9600 baudrate connection to a Linux PC. 
+0000			; 
+0000			; If this is not exact enough, another xtal oscillator must be selected, 
+0000			; it should have the frequency: 3.6864 MHz 
+0000			; The divide constant will then be set to 12 which gives the baudrate 
+0000			; of 3686400/(2*16*12) = 9600 baud. 
+0000			BAUDDIV:	equ 13 
+0000			 
+0000			; The program is copied to high RAM where it is executed 
+0000			HIRAM:	equ 0x8000 
+0000			 
+0000			; The program starts here when copied from EPROM at boot 
+0000				org HIRAM 
+8000			 
+8000			boot: 
+8000 31 54 94			ld sp,stacktop	; initialize stack pointer 
+8003			 
+8003 3e 01			ld a,1		; one LED blink after initial start 
+8005 cd b5 82			call blink 
+8008 3e 05			ld a,5 
+800a cd c5 82			call delay 
+800d			 
+800d cd eb 81			call ctc_init 
+8010 3e 02			ld a,2          ; two LED blinks after CTC init 
+8012 cd b5 82			call blink 
+8015 3e 05			ld a,5 
+8017 cd c5 82			call delay 
+801a			 
+801a cd 04 82			call sio_init 
+801d 3e 03			ld a,3          ; three LED blinks after SIO init 
+801f cd b5 82			call blink 
+8022 3e 05			ld a,5 
+8024 cd c5 82			call delay 
+8027			 
+8027 cd da 81			call pio_init 
+802a 3e 04			ld a,4          ; four LED blinks after PIO init 
+802c cd b5 82			call blink 
+802f 3e 05			ld a,5 
+8031 cd c5 82			call delay 
+8034			 
+8034 3e 11			ld a, 00010001b	; bit pattern to output on PIO 
+8036 32 4c 84			ld (pio_out),a  
+8039			testloop: 
+8039			; test SIO channel A 
+8039 cd 21 82			call sel_a_sio 
+803c cd 8a 82			call print_newline 
+803f 21 05 83			ld hl, ver_msg 
+8042 cd 97 82			call print_string 
+8045 cd 8a 82			call print_newline 
+8048 21 45 83			ld hl, a_msg 
+804b cd 97 82			call print_string 
+804e cd 8a 82			call print_newline 
+8051 3e 00			ld a, 0 
+8053 32 4d 84			ld (keyin), a 
+8056			nxt_a_key: 
+8056 cd 73 82			call getkey	; test if any input character available 
+8059 b7				or a 
+805a ca 68 80			jp z, no_more_a_keys 
+805d cd 59 82			call putc 
+8060 3e 01			ld a, 1 
+8062 32 4d 84			ld (keyin), a 
+8065 c3 56 80			jp nxt_a_key 
+8068			no_more_a_keys: 
+8068 3a 4d 84			ld a, (keyin) 
+806b b7				or a 
+806c ca 78 80			jp z, no_a_key 
+806f 21 5d 83			ld hl, a_in_msg 
+8072 cd 97 82			call print_string 
+8075 cd 8a 82			call print_newline 
+8078			no_a_key: 
+8078 3e 05			ld a,5		; five LED blinks after sending on SIO A 
+807a cd b5 82			call blink 
+807d 3e 05			ld a,5 
+807f cd c5 82			call delay 
+8082			 
+8082 cd a7 82			call pio_bits_out 
+8085			 
+8085			; test SIO channel B 
+8085 cd 2e 82			call sel_b_sio 
+8088 cd 8a 82			call print_newline 
+808b 21 05 83			ld hl, ver_msg 
+808e cd 97 82			call print_string 
+8091 cd 8a 82			call print_newline 
+8094 21 78 83			ld hl, b_msg 
+8097 cd 97 82			call print_string 
+809a cd 8a 82			call print_newline 
+809d 3e 00			ld a, 0 
+809f 32 4d 84			ld (keyin), a 
+80a2			nxt_b_key: 
+80a2 cd 73 82			call getkey	; test if any input character available 
+80a5 b7				or a 
+80a6 ca b4 80			jp z, no_more_b_keys 
+80a9 cd 59 82			call putc 
+80ac 3e 01			ld a, 1 
+80ae 32 4d 84			ld (keyin), a 
+80b1 c3 a2 80			jp nxt_b_key 
+80b4			no_more_b_keys: 
+80b4 3a 4d 84			ld a, (keyin) 
+80b7 b7				or a 
+80b8 ca c4 80			jp z, no_b_key 
+80bb 21 90 83			ld hl, b_in_msg 
+80be cd 97 82			call print_string 
+80c1 cd 8a 82			call print_newline 
+80c4			no_b_key: 
+80c4 3e 06			ld a, 6			; six LED blinks after sending on SIO B 
+80c6 cd b5 82			call blink 
+80c9 3e 05			ld a, 5 
+80cb cd c5 82			call delay 
+80ce			 
+80ce cd a7 82			call pio_bits_out 
+80d1			 
+80d1			; Test RAM 
+80d1 21 ab 83			ld hl, lo_ram_tst_start 
+80d4 cd 21 82			call sel_a_sio 
+80d7 cd 97 82			call print_string 
+80da cd 8a 82			call print_newline 
+80dd cd 2e 82			call sel_b_sio 
+80e0 cd 97 82			call print_string 
+80e3 cd 8a 82			call print_newline 
+80e6 cd 5c 81			call test_low_ram 
+80e9 21 c2 83			ld hl, lo_ram_tst_ok 
+80ec 3a 52 84			ld a,(ramerr)		; was there an error? 
+80ef b7				or a 
+80f0 ca f6 80			jp z, lo_ram_prt	; no error 
+80f3 21 dc 83			ld hl, lo_ram_tst_err 
+80f6			lo_ram_prt: 
+80f6 cd 21 82			call sel_a_sio 
+80f9 cd 97 82			call print_string 
+80fc cd 8a 82			call print_newline 
+80ff cd 2e 82			call sel_b_sio 
+8102 cd 97 82			call print_string 
+8105 cd 8a 82			call print_newline 
+8108 3e 07			ld a, 7			; seven LED blinks after testing low RAM 
+810a cd b5 82			call blink 
+810d 3e 05			ld a,5 
+810f cd c5 82			call delay 
+8112			 
+8112 cd a7 82			call pio_bits_out 
+8115			 
+8115 21 f9 83			ld hl, hi_ram_tst_start 
+8118 cd 21 82			call sel_a_sio 
+811b cd 97 82			call print_string 
+811e cd 8a 82			call print_newline 
+8121 cd 2e 82			call sel_b_sio 
+8124 cd 97 82			call print_string 
+8127 cd 8a 82			call print_newline 
+812a cd 9b 81			call test_high_ram 
+812d 21 11 84			ld hl, hi_ram_tst_ok 
+8130 3a 52 84			ld a,(ramerr)		; was there an error? 
+8133 b7				or a 
+8134 ca 3a 81			jp z, hi_ram_prt	; no error 
+8137 21 2c 84			ld hl, hi_ram_tst_err 
+813a			hi_ram_prt: 
+813a cd 21 82			call sel_a_sio 
+813d cd 97 82			call print_string 
+8140 cd 8a 82			call print_newline 
+8143 cd 2e 82			call sel_b_sio 
+8146 cd 97 82			call print_string 
+8149 cd 8a 82			call print_newline 
+814c 3e 08			ld a, 8			; eight LED blinks after testing high RAM 
+814e cd b5 82			call blink 
+8151 3e 05			ld a, 5 
+8153 cd c5 82			call delay 
+8156			 
+8156 cd a7 82			call pio_bits_out 
+8159			 
+8159 c3 39 80			jp testloop 
+815c			 
+815c			; test_low_ram: test lower 32K RAM memory 
+815c			test_low_ram: 
+815c 3e 00			ld a, 0			; reset error flag 
+815e 32 52 84			ld (ramerr), a 
+8161 3e 01			ld a, 1 
+8163 d3 04			out (MEMLORAM), a	; select RAM in lower 32KB address range, LED on 
+8165 3e 05			ld a, 5			; test a couple of times 
+8167 32 53 84			ld (tests), a 
+816a			tstlolop: 
+816a 01 00 80			ld bc, 0x8000		; number of bytes to test 
+816d 21 00 00			ld hl, 0x0000		; start address of test 
+8170			tstlo: 
+8170 1e 00			ld e, 0x00 
+8172 73				ld (hl), e 
+8173 7e				ld a, (hl) 
+8174 bb				cp e 
+8175 ca 7d 81			jp z, tstloff 
+8178 3e 01			ld a, 1 
+817a 32 52 84			ld (ramerr), a 
+817d			tstloff: 
+817d 1e ff			ld e, 0xff 
+817f 73				ld (hl), e 
+8180 7e				ld a, (hl) 
+8181 bb				cp e 
+8182 ca 8a 81			jp z, tstlonxt 
+8185 3e 01			ld a, 1 
+8187 32 52 84			ld (ramerr), a 
+818a			tstlonxt: 
+818a 23				inc hl 
+818b 0b				dec bc 
+818c 78				ld a, b 
+818d b1				or c 
+818e 20 e0			jr nz, tstlo 
+8190 3a 53 84			ld a, (tests) 
+8193 3d				dec a 
+8194 32 53 84			ld (tests),a 
+8197 b7				or a 
+8198 20 d0			jr nz, tstlolop 
+819a c9				ret 
+819b			 
+819b			; test_high_ram: test higher 32K RAM memory 
+819b			test_high_ram: 
+819b 3e 00			ld a, 0			; reset error flag 
+819d 32 52 84			ld (ramerr), a 
+81a0 3e 00			ld a, 0 
+81a2 d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range, LED on 
+81a4							; LED indicates that higher RAM is tested 
+81a4 3e 05			ld a, 5			; test a couple of times 
+81a6 32 53 84			ld (tests), a 
+81a9			tsthilop: 
+81a9 01 ab 6b			ld bc, 0xffff - hiramstart	; number of bytes to test 
+81ac 21 54 94			ld hl, hiramstart	; start address of test, after code and variables 
+81af			tsthi: 
+81af 1e 00			ld e, 0x00 
+81b1 73				ld (hl), e 
+81b2 7e				ld a, (hl) 
+81b3 bb				cp e 
+81b4 ca bc 81			jp z, tsthiff 
+81b7 3e 01			ld a, 1 
+81b9 32 52 84			ld (ramerr), a 
+81bc			tsthiff: 
+81bc 1e ff			ld e, 0xff 
+81be 73				ld (hl), e 
+81bf 7e				ld a, (hl) 
+81c0 bb				cp e 
+81c1 ca c9 81			jp z, tsthinxt 
+81c4 3e 01			ld a, 1 
+81c6 32 52 84			ld (ramerr), a 
+81c9			tsthinxt: 
+81c9 23				inc hl 
+81ca 0b				dec bc 
+81cb 78				ld a, b 
+81cc b1				or c 
+81cd 20 e0			jr nz, tsthi 
+81cf 3a 53 84			ld a, (tests) 
+81d2 3d				dec a 
+81d3 32 53 84			ld (tests), a 
+81d6 b7				or a 
+81d7 20 d0			jr nz, tsthilop 
+81d9 c9				ret 
+81da			 
+81da			; pio_init: initialize PIO channel A and B for output (Mode 0) 
+81da			; affects: A 
+81da			pio_init: 
+81da 3e 0f			ld a, 00001111b		; mode 0 
+81dc d3 12			out (PIO_A_CTRL), a 
+81de 3e 07			ld a, 00000111b		; int disable 
+81e0 d3 12			out (PIO_A_CTRL), a 
+81e2 3e 0f			ld a, 00001111b		; mode 0 
+81e4 d3 13			out (PIO_B_CTRL), a 
+81e6 3e 07			ld a, 00000111b		; int disable 
+81e8 d3 13			out (PIO_B_CTRL), a 
+81ea c9				ret 
+81eb			 
+81eb			; ctc_init: initializes the CTC channel 0 for baudrate clock to SIO/0 
+81eb			; initializes also CTC channels 1 & 2 
+81eb			; input TRG0-2 is supplied by the BCLK signal which is the system clock 
+81eb			; divided by 2 by the ATF22V10C  
+81eb			; affects: A 
+81eb			ctc_init: 
+81eb				; CTC chan 0 
+81eb 3e 47			ld a, 01000111b		; int off, counter on, prescaler don't care, 
+81ed							; edge don't care, time trigger don't care, 
+81ed							; time constant follows, sw reset,  
+81ed							; this is a ctrl cmd 
+81ed d3 0c			out (CTC_CH0), a 
+81ef 3e 0d			ld a, BAUDDIV		; divide constant to get baudrate 
+81f1 d3 0c			out (CTC_CH0), a 
+81f3				; CTC chan 1 
+81f3 3e 47			ld a, 01000111b		; int off, counter on, prescaler don't care, 
+81f5							; edge don't care, time trigger don't care, 
+81f5							; time constant follows, sw reset,  
+81f5							; this is a ctrl cmd 
+81f5 d3 0d			out (CTC_CH1), a 
+81f7 3e 0a			ld a, 10		; divide BCLK by 10 
+81f9 d3 0d			out (CTC_CH1), a 
+81fb				; CTC chan 2 
+81fb 3e 47			ld a, 01000111b		; int off, counter on, prescaler don't care, 
+81fd							; edge don't care, time trigger don't care, 
+81fd							; time constant follows, sw reset,  
+81fd							; this is a ctrl cmd 
+81fd d3 0e			out (CTC_CH2), a 
+81ff 3e 64			ld a, 100		; divide BCLK by 100 
+8201 d3 0e			out (CTC_CH2), a 
+8203 c9				ret 
+8204			 
+8204			; sio_init: initializes the SIO/0 for serial communication 
+8204			; affects: HL, B, C 
+8204			sio_init: 
+8204				; load B with number of bytes 
+8204 06 0a			ld b, sio_init_data_end - sio_init_data 
+8206 21 17 82			ld hl, sio_init_data	; HL points to start of data 
+8209 0e 0a			ld c, SIO_A_CTRL	; I/O-port A for write 
+820b ed b3			otir			; block write of B bytes to [C] starting from HL 
+820d			 
+820d				; load B with number of bytes 
+820d 06 0a			ld b, sio_init_data_end - sio_init_data 
+820f 21 17 82			ld hl, sio_init_data	; HL points to start of data 
+8212 0e 0b			ld c, SIO_B_CTRL	; I/O-port B for write 
+8214 ed b3			otir			; block write of B bytes to [C] starting from HL 
+8216			 
+8216 c9				ret 
+8217			 
+8217			sio_init_data: 
+8217 30				db 00110000b		; write to WR0: error reset 
+8218 18				db 00011000b		; write to WR0: channel reset 
+8219 04 44			db 0x04, 01000100b	; write to WR4: clkx16, 1 stop bit, no parity 
+821b 05 68			db 0x05, 01101000b	; write to WR5: DTR inactive, enable TX 8bit, 
+821d							; BREAK off, TX on, RTS inactive 
+821d 01 00			db 0x01, 00000000b	; write to WR1: no interrupts enabled 
+821f 03 c1			db 0x03, 11000001b	; write to WR3: enable RX 8bit 
+8221			sio_init_data_end: 
+8221			 
+8221			; sel_a_sio: selects SIO channel A for i/o 
+8221			; affects: none 
+8221			sel_a_sio: 
+8221 f5				push af 
+8222 3e 08			ld a, SIO_A_DATA 
+8224 32 4b 84			ld (sio_data), a 
+8227 3e 0a			ld a, SIO_A_CTRL 
+8229 32 4a 84			ld (sio_ctrl), a 
+822c f1				pop af 
+822d c9				ret 
+822e			 
+822e			; sel_b_sio: selects SIO channel B for i/o 
+822e			; affects: none 
+822e			sel_b_sio: 
+822e f5				push af 
+822f 3e 09			ld a, SIO_B_DATA 
+8231 32 4b 84			ld (sio_data), a 
+8234 3e 0b			ld a, SIO_B_CTRL 
+8236 32 4a 84			ld (sio_ctrl), a 
+8239 f1				pop af 
+823a c9				ret 
+823b			 
+823b			; tx_ready: waits for transmitt buffer to become empty 
+823b			; affects: none 
+823b			sio_tx_ready: 
+823b f5				push af 
+823c c5				push bc 
+823d			sio_tx_ready_loop: 
+823d 3a 4a 84			ld a, (sio_ctrl) 
+8240 4f				ld c, a 
+8241 ed 78			in a, (c)		; read RR0 
+8243 cb 57			bit 2, a		; check if bit 2 is set 
+8245 28 f6			jr z, sio_tx_ready_loop	; if no - check again 
+8247 c1				pop bc 
+8248 f1				pop af 
+8249 c9				ret 
+824a			 
+824a			; rx_ready: waits for a character to become available 
+824a			; affects: none 
+824a			sio_rx_ready: 
+824a f5				push af 
+824b c5				push bc 
+824c			sio_rx_ready_loop:	 
+824c 3a 4a 84			ld a, (sio_ctrl) 
+824f 4f				ld c, a 
+8250 ed 78			in a, (c)		; read RR0 
+8252 cb 47			bit 0, a		; check if bit 0 is set 
+8254 28 f6			jr z, sio_rx_ready_loop	; if no - rx buffer has no data => check again 
+8256 c1				pop bc 
+8257 f1				pop af 
+8258 c9				ret 
+8259			 
+8259			; sends byte in reg A	 
+8259			; affects: none 
+8259			putc: 
+8259 c5				push bc 
+825a f5				push af 
+825b cd 3b 82			call sio_tx_ready 
+825e 3a 4b 84			ld a, (sio_data) 
+8261 4f				ld c, a 
+8262 f1				pop af 
+8263 ed 79			out (c), a		; write character 
+8265 c1				pop bc 
+8266 c9				ret 
+8267			 
+8267			; getc: waits for a byte to be available and reads it 
+8267			; returns: A - read byte 
+8267			getc: 
+8267 c5				push bc 
+8268 cd 4a 82			call sio_rx_ready 
+826b 3a 4b 84			ld a, (sio_data) 
+826e 4f				ld c, a 
+826f ed 78			in a, (c)		; read character 
+8271 c1				pop bc 
+8272 c9				ret 
+8273			 
+8273			; getkey: gets a byte if available and reads it 
+8273			; returns: A - read byte or 0 if no byte available 
+8273			getkey: 
+8273 c5				push bc 
+8274 3a 4a 84			ld a, (sio_ctrl) 
+8277 4f				ld c, a 
+8278 ed 78			in a, (c)		; read RR0 
+827a cb 47			bit 0, a		; check if bit 0 is set 
+827c 28 08			jr z, no_key		; if no - rx buffer has no data => return 0 
+827e 3a 4b 84			ld a, (sio_data) 
+8281 4f				ld c, a 
+8282 ed 78			in a, (c)		; read character 
+8284 c1				pop bc 
+8285 c9				ret 
+8286			no_key: 
+8286 3e 00			ld a, 0 
+8288 c1				pop bc 
+8289 c9				ret 
+828a			 
+828a			; print_newline: prints a CR/LF pair to advance to the next line  
+828a			; affects: none 
+828a			print_newline: 
+828a f5				push af 
+828b 3e 0d			ld a, CR		; print Carriage Return 
+828d cd 59 82			call putc 
+8290 3e 0a			ld a, LF		; print Line Feed 
+8292 cd 59 82			call putc 
+8295 f1				pop af 
+8296 c9				ret 
+8297							 
+8297			; print_string: prints a string which starts at adress HL 
+8297			; and is terminated by EOS-character 
+8297			; affects: none 
+8297			print_string: 
+8297 f5				push af 
+8298 e5				push hl 
+8299			print_string_1: 
+8299 7e				ld a,(hl)		; load next character 
+829a fe 00			cp 0			; is it en End Of String - character? 
+829c 28 06			jr z, print_string_2	; yes - return 
+829e cd 59 82			call putc		; no - print character 
+82a1 23				inc hl			; HL++ 
+82a2 18 f5			jr print_string_1	; do it again 
+82a4			print_string_2: 
+82a4 e1				pop hl 
+82a5 f1				pop af 
+82a6 c9				ret 
+82a7			 
+82a7			; pio_bits_out: output bitpattern on PIO ports, then shift the pattern left 
+82a7			; affects: none 
+82a7			pio_bits_out: 
+82a7 f5				push af 
+82a8 3a 4c 84			ld a, (pio_out) 
+82ab d3 10			out (PIO_A_DATA), a 
+82ad d3 11			out (PIO_B_DATA), a 
+82af 07				rlca 
+82b0 32 4c 84			ld (pio_out), a 
+82b3 f1				pop af 
+82b4 c9				ret 
+82b5			 
+82b5			; blink: the blink routine blinks the MEMSEL LED 
+82b5			; the number of times to blink in register A 
+82b5			; Must run in upper 32KB memory 
+82b5			 
+82b5			; Blink LED a number of times 
+82b5			; using: A 
+82b5			blink: 
+82b5 32 50 84			ld (ledblinks),a 
+82b8			blinkloop: 
+82b8 cd d8 82			call blinkled 
+82bb 3a 50 84			ld a,(ledblinks) 
+82be 3d				dec a 
+82bf 32 50 84			ld (ledblinks),a 
+82c2 c8				ret z 
+82c3 18 f3			jr blinkloop 
+82c5			 
+82c5			; Make delay wait a number of times 
+82c5			; using: A 
+82c5			delay: 
+82c5 32 51 84			ld (delays),a 
+82c8			delayloop: 
+82c8 cd ed 82			call bdelay 
+82cb cd ed 82			call bdelay 
+82ce 3a 51 84			ld a,(delays) 
+82d1 3d				dec a 
+82d2 32 51 84			ld (delays),a 
+82d5 c8				ret z 
+82d6 18 f0			jr delayloop 
+82d8			 
+82d8			; Blink MEMSEL LED once 
+82d8			blinkled: 
+82d8 3e 01			ld a,1			; value is ignored when writing 
+82da							; it is for the benefit of the logic analyzer 
+82da d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range, LED on 
+82dc cd ed 82			call bdelay 
+82df cd ed 82			call bdelay 
+82e2 3e 00			ld a,0 
+82e4 d3 00			out (MEMEPROM),a	; select EPROM in lower 32KB address range, LED off 
+82e6 cd ed 82			call bdelay 
+82e9 cd ed 82			call bdelay 
+82ec c9				ret 
+82ed			 
+82ed			; Suitable delay for blinking LED and waiting 
+82ed			bdelay: 
+82ed e5				push hl 
+82ee 21 40 1f			ld hl,8000	; number of loops to delay between blinks 
+82f1 22 4e 84			ld (loopcnt),hl 
+82f4			bdelayloop: 
+82f4 2a 4e 84			ld hl,(loopcnt) 
+82f7 2b				dec hl 
+82f8 7c				ld a,h 
+82f9 b5				or l 
+82fa ca 03 83			jp z,bleaveloop 
+82fd 22 4e 84			ld (loopcnt),hl 
+8300 c3 f4 82			jp bdelayloop 
+8303			bleaveloop: 
+8303 e1				pop hl 
+8304 c9				ret 
+8305			 
+8305			; Messages to send on serial channels 
+8305			ver_msg: 
+8305 ..			        db "Z80 computer board, z80test version 1.0" 
+832c				include "built.z80" 
+832c ..			    db ", Built 2021-05-25 16:12" 
+# End of file built.z80
+8344 00				db 0 
+8345			a_msg: 
+8345 .. 00			db "Output on SIO channal A", 0 
+835d			a_in_msg: 
+835d .. 00			db " <- input on SIO channal A", 0 
+8378			b_msg: 
+8378 .. 00			db "Output on SIO channal B", 0 
+8390			b_in_msg: 
+8390 .. 00			db " <- input on SIO channal B", 0 
+83ab			lo_ram_tst_start: 
+83ab .. 00			db "Testing low RAM memory", 0 
+83c2			lo_ram_tst_ok: 
+83c2 .. 00			db "Low RAM memory test is ok", 0 
+83dc			lo_ram_tst_err: 
+83dc .. 00			db "Error in low RAM memory test", 0 
+83f9			hi_ram_tst_start: 
+83f9 .. 00			db "Testing high RAM memory", 0 
+8411			hi_ram_tst_ok: 
+8411 .. 00			db "High RAM memory test is ok", 0 
+842c			hi_ram_tst_err: 
+842c .. 00			db "Error in high RAM memory test", 0 
+844a			 
+844a			; Variables 
+844a			sio_ctrl: 
+844a 00				db 0 
+844b			sio_data: 
+844b 00				db 0 
+844c			pio_out: 
+844c 00				db 0 
+844d			keyin: 
+844d 00				db 0 
+844e			loopcnt: 
+844e 00 00			dw 0 
+8450			ledblinks: 
+8450 00				db 0 
+8451			delays: 
+8451 00				db 0 
+8452			ramerr: 
+8452 00				db 0 
+8453			tests: 
+8453 00				db 0 
+8454			 
+8454			; Reserve space for stack 
+8454 00...			ds 4096 
+9454			stacktop: 
+9454			 
+9454			; Start of high RAM test 
+9454			 
+9454			hiramstart: 
+9454			 
+9454			 
+# End of file z80hightest.z80
+9454

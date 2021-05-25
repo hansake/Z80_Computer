@@ -1,6 +1,11 @@
-; Test i/o devices on home built Z80 computer board
-
+; Test memory and i/o devices on home built Z80 computer board
 ;
+; You are free to use, modify, and redistribute
+; this source code. The software is provided "as is",
+; without warranty of any kind.
+; Hastily Cobbled Together 2021 by Hans-Ake Lund.
+;
+
 ; Character definitions
 ;
 EOS:		equ 0x00	; End Of String
@@ -40,16 +45,17 @@ PIO_B_CTRL:	equ PIO_BASE + 1 + 2
 ; Using the CTC divider constant set to 13 will give a baud-rate
 ; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough.
 ; This is tested and works with a 9600 baudrate connection to a Linux PC.
+;
 ; If this is not exact enough, another xtal oscillator must be selected,
-; it should have theOutput Mode (Mode 0) frequency: 3.6864 MHz
-; The divide constant should then be set to 12 which gives the baudrate
+; it should have the frequency: 3.6864 MHz
+; The divide constant will then be set to 12 which gives the baudrate
 ; of 3686400/(2*16*12) = 9600 baud.
 BAUDDIV:	equ 13
 
 ; The program is copied to high RAM where it is executed
 HIRAM:	equ 0x8000
 
-; The program starts here at boot
+; The program starts here when copied from EPROM at boot
 	org HIRAM
 
 boot:
@@ -81,7 +87,9 @@ boot:
 	ld a, 00010001b	; bit pattern to output on PIO
 	ld (pio_out),a 
 testloop:
+; test SIO channel A
 	call sel_a_sio
+	call print_newline
 	ld hl, ver_msg
 	call print_string
 	call print_newline
@@ -111,13 +119,11 @@ no_a_key:
 	ld a,5
 	call delay
 
-	ld a, (pio_out)
-	out (PIO_A_DATA), a
-	out (PIO_B_DATA), a
-	rlca
-	ld (pio_out), a
+	call pio_bits_out
 
+; test SIO channel B
 	call sel_b_sio
+	call print_newline
 	ld hl, ver_msg
 	call print_string
 	call print_newline
@@ -142,18 +148,150 @@ no_more_b_keys:
 	call print_string
 	call print_newline
 no_b_key:
-	ld a,6		; six LED blinks after sending on SIO B
+	ld a, 6			; six LED blinks after sending on SIO B
+	call blink
+	ld a, 5
+	call delay
+
+	call pio_bits_out
+
+; Test RAM
+	ld hl, lo_ram_tst_start
+	call sel_a_sio
+	call print_string
+	call print_newline
+	call sel_b_sio
+	call print_string
+	call print_newline
+	call test_low_ram
+	ld hl, lo_ram_tst_ok
+	ld a,(ramerr)		; was there an error?
+	or a
+	jp z, lo_ram_prt	; no error
+	ld hl, lo_ram_tst_err
+lo_ram_prt:
+	call sel_a_sio
+	call print_string
+	call print_newline
+	call sel_b_sio
+	call print_string
+	call print_newline
+	ld a, 7			; seven LED blinks after testing low RAM
 	call blink
 	ld a,5
 	call delay
 
-	ld a, (pio_out)
-	out (PIO_A_DATA), a
-	out (PIO_B_DATA), a
-	rlca
-	ld (pio_out), a
+	call pio_bits_out
+
+	ld hl, hi_ram_tst_start
+	call sel_a_sio
+	call print_string
+	call print_newline
+	call sel_b_sio
+	call print_string
+	call print_newline
+	call test_high_ram
+	ld hl, hi_ram_tst_ok
+	ld a,(ramerr)		; was there an error?
+	or a
+	jp z, hi_ram_prt	; no error
+	ld hl, hi_ram_tst_err
+hi_ram_prt:
+	call sel_a_sio
+	call print_string
+	call print_newline
+	call sel_b_sio
+	call print_string
+	call print_newline
+	ld a, 8			; eight LED blinks after testing high RAM
+	call blink
+	ld a, 5
+	call delay
+
+	call pio_bits_out
 
 	jp testloop
+
+; test_low_ram: test lower 32K RAM memory
+test_low_ram:
+	ld a, 0			; reset error flag
+	ld (ramerr), a
+	ld a, 1
+	out (MEMLORAM), a	; select RAM in lower 32KB address range, LED on
+	ld a, 5			; test a couple of times
+	ld (tests), a
+tstlolop:
+	ld bc, 0x8000		; number of bytes to test
+	ld hl, 0x0000		; start address of test
+tstlo:
+	ld e, 0x00
+	ld (hl), e
+	ld a, (hl)
+	cp e
+	jp z, tstloff
+	ld a, 1
+	ld (ramerr), a
+tstloff:
+	ld e, 0xff
+	ld (hl), e
+	ld a, (hl)
+	cp e
+	jp z, tstlonxt
+	ld a, 1
+	ld (ramerr), a
+tstlonxt:
+	inc hl
+	dec bc
+	ld a, b
+	or c
+	jr nz, tstlo
+	ld a, (tests)
+	dec a
+	ld (tests),a
+	or a
+	jr nz, tstlolop
+	ret
+
+; test_high_ram: test higher 32K RAM memory
+test_high_ram:
+	ld a, 0			; reset error flag
+	ld (ramerr), a
+	ld a, 0
+	out (MEMEPROM), a	; select EPROM in lower 32KB address range, LED on
+				; LED indicates that higher RAM is tested
+	ld a, 5			; test a couple of times
+	ld (tests), a
+tsthilop:
+	ld bc, 0xffff - hiramstart	; number of bytes to test
+	ld hl, hiramstart	; start address of test, after code and variables
+tsthi:
+	ld e, 0x00
+	ld (hl), e
+	ld a, (hl)
+	cp e
+	jp z, tsthiff
+	ld a, 1
+	ld (ramerr), a
+tsthiff:
+	ld e, 0xff
+	ld (hl), e
+	ld a, (hl)
+	cp e
+	jp z, tsthinxt
+	ld a, 1
+	ld (ramerr), a
+tsthinxt:
+	inc hl
+	dec bc
+	ld a, b
+	or c
+	jr nz, tsthi
+	ld a, (tests)
+	dec a
+	ld (tests), a
+	or a
+	jr nz, tsthilop
+	ret
 
 ; pio_init: initialize PIO channel A and B for output (Mode 0)
 ; affects: A
@@ -351,6 +489,18 @@ print_string_2:
 	pop af
 	ret
 
+; pio_bits_out: output bitpattern on PIO ports, then shift the pattern left
+; affects: none
+pio_bits_out:
+	push af
+	ld a, (pio_out)
+	out (PIO_A_DATA), a
+	out (PIO_B_DATA), a
+	rlca
+	ld (pio_out), a
+	pop af
+	ret
+
 ; blink: the blink routine blinks the MEMSEL LED
 ; the number of times to blink in register A
 ; Must run in upper 32KB memory
@@ -386,12 +536,14 @@ blinkled:
 				; it is for the benefit of the logic analyzer
 	out (MEMLORAM),a	; select RAM in lower 32KB address range, LED on
 	call bdelay
+	call bdelay
 	ld a,0
 	out (MEMEPROM),a	; select EPROM in lower 32KB address range, LED off
 	call bdelay
+	call bdelay
 	ret
 
-; Suitable delay for blinking LED
+; Suitable delay for blinking LED and waiting
 bdelay:
 	push hl
 	ld hl,8000	; number of loops to delay between blinks
@@ -409,18 +561,30 @@ bleaveloop:
 	ret
 
 ; Messages to send on serial channels
+ver_msg:
+        db "Z80 computer board, z80test version 1.0"
+	include "built.z80"
+	db 0
 a_msg:
-	db "Z80 computer SIO channal A", 0
+	db "Output on SIO channal A", 0
 a_in_msg:
 	db " <- input on SIO channal A", 0
 b_msg:
-	db "Z80 computer SIO channal B", 0
+	db "Output on SIO channal B", 0
 b_in_msg:
 	db " <- input on SIO channal B", 0
-ver_msg:
-        db "This is: z80test.z80 version 0.9"
-	include "built.z80"
-	db 0
+lo_ram_tst_start:
+	db "Testing low RAM memory", 0
+lo_ram_tst_ok:
+	db "Low RAM memory test is ok", 0
+lo_ram_tst_err:
+	db "Error in low RAM memory test", 0
+hi_ram_tst_start:
+	db "Testing high RAM memory", 0
+hi_ram_tst_ok:
+	db "High RAM memory test is ok", 0
+hi_ram_tst_err:
+	db "Error in high RAM memory test", 0
 
 ; Variables
 sio_ctrl:
@@ -436,6 +600,10 @@ loopcnt:
 ledblinks:
 	db 0
 delays:
+	db 0
+ramerr:
+	db 0
+tests:
 	db 0
 
 ; Reserve space for stack

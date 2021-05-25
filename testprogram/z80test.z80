@@ -1,6 +1,15 @@
-; Test Z80 computer
+; Test Z80 computer hardware, copies code from EPROM to
+; RAM and then runs it.
+;
+; You are free to use, modify, and redistribute
+; this source code. The software is provided "as is",
+; without warranty of any kind.
+; Hastily Cobbled Together 2021 by Hans-Ake Lund.
+;
 
 HIRAM:	equ 0x8000
+
+	org 0x0000
 
 ; The program starts here at boot
 boot:

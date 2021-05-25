@@ -18,7 +18,8 @@ The lower memory range 0x0000 - 0x7fff can be switched between EPROM and RAM fro
 Address decoding is done with a Programmable Logic Device (PLD): ATF22V10C.
 
 In addition there is:
-- 2 4MHz crystal osciolator
+- a 4MHz crystal oscillator
 - a reset circuit using LM555 (and a transistor to invert the reset signal)
+- some resistors and capacitors
 
 A test program to verify the operation of the board is also available.

@@ -86,7 +86,29 @@ boot:
 
 	ld a, 00010001b	; bit pattern to output on PIO
 	ld (pio_out),a 
+
+	call sel_a_sio
+	call print_newline
+	ld hl, ver_msg
+	call print_string
+	call print_newline
+	call sel_b_sio
+	call print_newline
+	ld hl, ver_msg
+	call print_string
+	call print_newline
+
+; Initialize interupt mode 2 and enable interupt
+        im 2
+        ld a, ivblock / 256
+        ld i, a
+        ei
+
+; This test loop goes on "forever"
 testloop:
+        ld a, 0         ; reset interrupt indicator
+        ld (gotint), a
+
 ; test SIO channel A
 	call sel_a_sio
 	call print_newline
@@ -118,8 +140,6 @@ no_a_key:
 	call blink
 	ld a,5
 	call delay
-
-	call pio_bits_out
 
 ; test SIO channel B
 	call sel_b_sio
@@ -153,8 +173,6 @@ no_b_key:
 	ld a, 5
 	call delay
 
-	call pio_bits_out
-
 ; Test RAM
 	ld hl, lo_ram_tst_start
 	call sel_a_sio
@@ -181,8 +199,6 @@ lo_ram_prt:
 	ld a,5
 	call delay
 
-	call pio_bits_out
-
 	ld hl, hi_ram_tst_start
 	call sel_a_sio
 	call print_string
@@ -208,7 +224,27 @@ hi_ram_prt:
 	ld a, 5
 	call delay
 
-	call pio_bits_out
+; Test if interupt recieved on SIO A
+        call sel_a_sio
+        ld hl, no_int_msg
+        ld a, (gotint)  ; Interupt recieved?
+        or a
+        jp z, prtinta    ; no
+        ld hl, int_msg
+prtinta:
+        call print_string
+        call print_newline
+
+; Test if interupt recieved on SIO B
+        call sel_b_sio
+        ld hl, no_int_msg
+        ld a, (gotint)  ; Interupt recieved?
+        or a
+        jp z, prtintb    ; no
+        ld hl, int_msg
+prtintb:
+        call print_string
+        call print_newline
 
 	jp testloop
 
@@ -320,6 +356,10 @@ ctc_init:
 	out (CTC_CH0), a
 	ld a, BAUDDIV		; divide constant to get baudrate
 	out (CTC_CH0), a
+        ; Interupt vector is written to chan 0
+        ld a, ctciv & 0xf8      ; interupt vector for device
+        out (CTC_CH0), a
+
 	; CTC chan 1
 	ld a, 01000111b		; int off, counter on, prescaler don't care,
 				; edge don't care, time trigger don't care,
@@ -328,6 +368,7 @@ ctc_init:
 	out (CTC_CH1), a
 	ld a, 10		; divide BCLK by 10
 	out (CTC_CH1), a
+
 	; CTC chan 2
 	ld a, 01000111b		; int off, counter on, prescaler don't care,
 				; edge don't care, time trigger don't care,
@@ -336,6 +377,16 @@ ctc_init:
 	out (CTC_CH2), a
 	ld a, 100		; divide BCLK by 100
 	out (CTC_CH2), a
+
+        ; CTC chan 3 setup
+        ld a, 11000111b         ; int enabled, counter on, prescaler don't car>
+                                ; edge don't care, time trigger don't care,
+                                ; time constant follows, sw reset,
+                                ; this is a ctrl cmd
+        out (CTC_CH3), a
+        ld a, 254                ; divide BCLK by 254
+        out (CTC_CH3), a
+
 	ret
 
 ; sio_init: initializes the SIO/0 for serial communication
@@ -489,18 +540,6 @@ print_string_2:
 	pop af
 	ret
 
-; pio_bits_out: output bitpattern on PIO ports, then shift the pattern left
-; affects: none
-pio_bits_out:
-	push af
-	ld a, (pio_out)
-	out (PIO_A_DATA), a
-	out (PIO_B_DATA), a
-	rlca
-	ld (pio_out), a
-	pop af
-	ret
-
 ; blink: the blink routine blinks the MEMSEL LED
 ; the number of times to blink in register A
 ; Must run in upper 32KB memory
@@ -560,9 +599,77 @@ bleaveloop:
 	pop hl
 	ret
 
+; Interupt routines, most are dummies for now
+; CTC interupts for CH0 - CH2 not used
+ctcint0:
+ctcint1:
+ctcint2:
+; PIO interrupt routines, not used for now
+piointa:
+piointb:
+; SIO interrupt routines, not used for now
+siointa:
+siointb:
+        ei
+        reti
+
+; CTC interrupt for CH3 used to test interrupt
+; sets indicator and outputs bit pattern on PIO ports
+; then shifts the pattern left
+ctcint3:
+        push af
+        ld a, 1
+        ld (gotint), a
+	ld a, (pio_out)
+	out (PIO_A_DATA), a
+	out (PIO_B_DATA), a
+	rlca
+	ld (pio_out), a
+        pop af
+        ei
+        reti
+
+endofcode:
+
+; Interupt vectors for interupt mode 2
+; make sure that the block is on an even 256 byte address
+if endofcode & 0x00ff
+        ds 256 - (endofcode & 0x00ff), 0xff
+endif
+
+ivblock:
+;
+; The SIO interupt vector block must be on
+; an even 16 byte address if "status affects vector" is used
+
+sioiv:
+        dw siointa
+        dw siointa
+        dw siointa
+        dw siointa
+        dw siointb
+        dw siointb
+        dw siointb
+        dw siointb
+
+; The CTC interupt vector block must be on
+; an even 8 byte address
+ctciv:
+        dw ctcint0
+        dw ctcint1
+        dw ctcint2
+        dw ctcint3
+
+; The PIO interupt vectors must be on
+; an even 2 byte address
+pioaiv:
+        dw piointa
+piobiv:
+        dw piointb
+
 ; Messages to send on serial channels
 ver_msg:
-        db "Z80 computer board, z80test version 1.0"
+        db "Z80 computer board, z80test version 1.1"
 	include "built.z80"
 	db 0
 a_msg:
@@ -585,6 +692,10 @@ hi_ram_tst_ok:
 	db "High RAM memory test is ok", 0
 hi_ram_tst_err:
 	db "Error in high RAM memory test", 0
+int_msg:
+        db "Interupt from CTC channel 3", 0
+no_int_msg:
+        db "No interupt from CTC channel 3", 0
 
 ; Variables
 sio_ctrl:
@@ -605,9 +716,11 @@ ramerr:
 	db 0
 tests:
 	db 0
+gotint:
+        db 0
 
 ; Reserve space for stack
-	ds 4096
+	ds 2048, 0xff
 stacktop:
 
 ; Start of high RAM test

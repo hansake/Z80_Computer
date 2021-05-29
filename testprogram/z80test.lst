@@ -16,7 +16,7 @@
 0000			boot: 
 0000			 
 0000			; copy the main program to high RAM at 0x8000 
-0000 01 54 14		        ld bc,prgend - prgstart 
+0000 01 a7 0d		        ld bc,prgend - prgstart 
 0003 21 19 00		        ld hl,prgstart 
 0006 11 00 80		        ld de,HIRAM 
 0009			cploop: 
@@ -35,6 +35,6 @@
 0019			; Main program to load in high RAM 
 0019			prgstart: 
 0019			        incbin "z80hightest.bin" 
-146d			prgend: 
+0dc0			prgend: 
 # End of file z80test.z80
-146d
+0dc0

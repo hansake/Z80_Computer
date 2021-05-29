@@ -40,19 +40,6 @@
 0000			PIO_B_DATA:	equ PIO_BASE + 1 + 0 
 0000			PIO_B_CTRL:	equ PIO_BASE + 1 + 2 
 0000			 
-0000			; Divide constant in CTC to get an approximate baudrate of 9600 
-0000			; To get 9600 baud with a 4MHz xtal oscillator the divide constant 
-0000			; should be 4000000/(9600*2*16) = 13.0208 
-0000			; Using the CTC divider constant set to 13 will give a baud-rate 
-0000			; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough. 
-0000			; This is tested and works with a 9600 baudrate connection to a Linux PC. 
-0000			; 
-0000			; If this is not exact enough, another xtal oscillator must be selected, 
-0000			; it should have the frequency: 3.6864 MHz 
-0000			; The divide constant will then be set to 12 which gives the baudrate 
-0000			; of 3686400/(2*16*12) = 9600 baud. 
-0000			BAUDDIV:	equ 13 
-0000			 
 0000			; The program is copied to high RAM where it is executed 
 0000			HIRAM:	equ 0x8000 
 0000			 
@@ -343,15 +330,28 @@
 8232 d3 13			out (PIO_B_CTRL), a 
 8234 c9				ret 
 8235			 
+8235			; Divide constant in CTC to get an approximate baudrate of 9600 
+8235			; To get 9600 baud with a 4MHz xtal oscillator the divide constant 
+8235			; should be 4000000/(9600*2*16) = 13.0208 
+8235			; Using the CTC divider constant set to 13 will give a baud-rate 
+8235			; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough. 
+8235			; This is tested and works with a 9600 baudrate connection to a Linux PC. 
+8235			; 
+8235			; (If this is not exact enough, another xtal oscillator must be selected, 
+8235			; it should have the frequency: 3.6864 MHz 
+8235			; The divide constant will then be set to 12 which gives the baudrate 
+8235			; of 3686400/(2*16*12) = 9600 baud.) 
+8235			BAUDDIV:	equ 13 
+8235			 
 8235			; ctc_init: initializes the CTC channel 0 for baudrate clock to SIO/0 
-8235			; initializes also CTC channels 1 & 2 
+8235			; initializes also CTC channels 1, 2 and 3 
 8235			; input TRG0-2 is supplied by the BCLK signal which is the system clock 
 8235			; divided by 2 by the ATF22V10C  
 8235			; affects: A 
 8235			ctc_init: 
 8235				; CTC chan 0 
-8235 3e 47			ld a, 01000111b		; int off, counter on, prescaler don't care, 
-8237							; edge don't care, time trigger don't care, 
+8235 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
+8237							; falling edge, time trigger don't care, 
 8237							; time constant follows, sw reset,  
 8237							; this is a ctrl cmd 
 8237 d3 0c			out (CTC_CH0), a 
@@ -362,8 +362,8 @@
 823f d3 0c		        out (CTC_CH0), a 
 8241			 
 8241				; CTC chan 1 
-8241 3e 47			ld a, 01000111b		; int off, counter on, prescaler don't care, 
-8243							; edge don't care, time trigger don't care, 
+8241 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
+8243							; falling edge, time trigger don't care, 
 8243							; time constant follows, sw reset,  
 8243							; this is a ctrl cmd 
 8243 d3 0d			out (CTC_CH1), a 
@@ -371,8 +371,8 @@
 8247 d3 0d			out (CTC_CH1), a 
 8249			 
 8249				; CTC chan 2 
-8249 3e 47			ld a, 01000111b		; int off, counter on, prescaler don't care, 
-824b							; edge don't care, time trigger don't care, 
+8249 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
+824b							; falling edge, time trigger don't care, 
 824b							; time constant follows, sw reset,  
 824b							; this is a ctrl cmd 
 824b d3 0e			out (CTC_CH2), a 
@@ -380,12 +380,12 @@
 824f d3 0e			out (CTC_CH2), a 
 8251			 
 8251			        ; CTC chan 3 setup 
-8251 3e c7		        ld a, 11000111b         ; int enabled, counter on, prescaler don't car> 
-8253			                                ; edge don't care, time trigger don't care, 
+8251 3e b7		        ld a, 10110111b         ; int enabled, timer mode, prescaler 256, 
+8253			                                ; rising edge, automatic time trigger, 
 8253			                                ; time constant follows, sw reset, 
 8253			                                ; this is a ctrl cmd 
 8253 d3 0f		        out (CTC_CH3), a 
-8255 3e fe		        ld a, 254                ; divide BCLK by 254 
+8255 3e 9c		        ld a, 156                ; divide CLK/(256 * 156) = ~100Hz 
 8257 d3 0f		        out (CTC_CH3), a 
 8259			 
 8259 c9				ret 
@@ -670,9 +670,9 @@
 841c			 
 841c			; Messages to send on serial channels 
 841c			ver_msg: 
-841c ..			        db "Z80 computer board, z80test version 1.1" 
+841c ..			        db "Z80 computer board, z80test version 1.2" 
 8443				include "built.z80" 
-8443 ..			    db ", Built 2021-05-29 10:39" 
+8443 ..			    db ", Built 2021-05-29 14:11" 
 # End of file built.z80
 845b 00				db 0 
 845c			a_msg: 

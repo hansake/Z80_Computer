@@ -39,19 +39,6 @@ PIO_A_CTRL:	equ PIO_BASE + 0 + 2
 PIO_B_DATA:	equ PIO_BASE + 1 + 0
 PIO_B_CTRL:	equ PIO_BASE + 1 + 2
 
-; Divide constant in CTC to get an approximate baudrate of 9600
-; To get 9600 baud with a 4MHz xtal oscillator the divide constant
-; should be 4000000/(9600*2*16) = 13.0208
-; Using the CTC divider constant set to 13 will give a baud-rate
-; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough.
-; This is tested and works with a 9600 baudrate connection to a Linux PC.
-;
-; If this is not exact enough, another xtal oscillator must be selected,
-; it should have the frequency: 3.6864 MHz
-; The divide constant will then be set to 12 which gives the baudrate
-; of 3686400/(2*16*12) = 9600 baud.
-BAUDDIV:	equ 13
-
 ; The program is copied to high RAM where it is executed
 HIRAM:	equ 0x8000
 
@@ -342,15 +329,28 @@ pio_init:
 	out (PIO_B_CTRL), a
 	ret
 
+; Divide constant in CTC to get an approximate baudrate of 9600
+; To get 9600 baud with a 4MHz xtal oscillator the divide constant
+; should be 4000000/(9600*2*16) = 13.0208
+; Using the CTC divider constant set to 13 will give a baud-rate
+; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough.
+; This is tested and works with a 9600 baudrate connection to a Linux PC.
+;
+; (If this is not exact enough, another xtal oscillator must be selected,
+; it should have the frequency: 3.6864 MHz
+; The divide constant will then be set to 12 which gives the baudrate
+; of 3686400/(2*16*12) = 9600 baud.)
+BAUDDIV:	equ 13
+
 ; ctc_init: initializes the CTC channel 0 for baudrate clock to SIO/0
-; initializes also CTC channels 1 & 2
+; initializes also CTC channels 1, 2 and 3
 ; input TRG0-2 is supplied by the BCLK signal which is the system clock
 ; divided by 2 by the ATF22V10C 
 ; affects: A
 ctc_init:
 	; CTC chan 0
-	ld a, 01000111b		; int off, counter on, prescaler don't care,
-				; edge don't care, time trigger don't care,
+	ld a, 01000111b		; int off, counter mode, prescaler don't care,
+				; falling edge, time trigger don't care,
 				; time constant follows, sw reset, 
 				; this is a ctrl cmd
 	out (CTC_CH0), a
@@ -361,8 +361,8 @@ ctc_init:
         out (CTC_CH0), a
 
 	; CTC chan 1
-	ld a, 01000111b		; int off, counter on, prescaler don't care,
-				; edge don't care, time trigger don't care,
+	ld a, 01000111b		; int off, counter mode, prescaler don't care,
+				; falling edge, time trigger don't care,
 				; time constant follows, sw reset, 
 				; this is a ctrl cmd
 	out (CTC_CH1), a
@@ -370,8 +370,8 @@ ctc_init:
 	out (CTC_CH1), a
 
 	; CTC chan 2
-	ld a, 01000111b		; int off, counter on, prescaler don't care,
-				; edge don't care, time trigger don't care,
+	ld a, 01000111b		; int off, counter mode, prescaler don't care,
+				; falling edge, time trigger don't care,
 				; time constant follows, sw reset, 
 				; this is a ctrl cmd
 	out (CTC_CH2), a
@@ -379,12 +379,12 @@ ctc_init:
 	out (CTC_CH2), a
 
         ; CTC chan 3 setup
-        ld a, 11000111b         ; int enabled, counter on, prescaler don't car>
-                                ; edge don't care, time trigger don't care,
+        ld a, 10110111b         ; int enabled, timer mode, prescaler 256,
+                                ; rising edge, automatic time trigger,
                                 ; time constant follows, sw reset,
                                 ; this is a ctrl cmd
         out (CTC_CH3), a
-        ld a, 254                ; divide BCLK by 254
+        ld a, 156                ; divide CLK/(256 * 156) = ~100Hz
         out (CTC_CH3), a
 
 	ret
@@ -669,7 +669,7 @@ piobiv:
 
 ; Messages to send on serial channels
 ver_msg:
-        db "Z80 computer board, z80test version 1.1"
+        db "Z80 computer board, z80test version 1.2"
 	include "built.z80"
 	db 0
 a_msg:

@@ -27,13 +27,18 @@ The test program will do the following:
 - Test low RAM (end of program - 0xffff) and output the result
 - Flash the LED seven times
 - The tests are then repeated from start of test loop
+- Check if interrupt is handled and show this on serial channels.
 
 As the LED is indicating that RAM is selected for low memory (0x0000 - 0x7fff)
 it will be on during low RAM test.
 
-For each test a moving bit pattern is output on PIO ports A and B.
+For each interupt a moving bit pattern is output on PIO ports A and B.
 Output from CTC channel 1 and 2 is also available in the PIO connectors.
 
 The main reason why the test program is copied to high RAM and executed
 there is that the LED flashing implies that the low memory addresses are
-switched between RAM and EPROM. Maybe I will add a separate indicator LED later.
+switched between RAM and EPROM.
+
+Maybe I will add a separate indicator LED later so that the LED flashing
+is not dependent on if EPROM or RAM is selected.
+

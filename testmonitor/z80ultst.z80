@@ -1,16 +1,16 @@
-; Test program to be uploade with z80tmon
+; Test program to be uploaded with z80tmon with the 'u' command
+; to RAM address 0x0000 and run from there with the 'g' command
 ;
 ; You are free to use, modify, and redistribute
 ; this source code. The software is provided "as is",
 ; without warranty of any kind.
 ; Hastily Cobbled Together 2021 by Hans-Ake Lund.
 ;
-; This program is uploaded to address 0x0000
-; and executed there.
 
 ; Port definitions for switching between low EPROM and RAM
-MEMEPROM:	equ 0x00
-MEMLORAM:	equ 0x04
+; in memory addresses 0x0000 - 0x7fff
+MEMEPROM:	equ 0x00	;select EPROM, default at reset
+MEMLORAM:	equ 0x04	;select RAM
 
 ; Port definitions for the SIO/0 chip
 SIO_BASE:	equ 0x08
@@ -37,6 +37,9 @@ PIO_B_CTRL:	equ PIO_BASE + 1 + 2
 LEDOFF:		equ 0x14
 LEDON:		equ 0x18
 
+; Serial channel timeout loop counter
+GETCTM: equ 9000                ; loop counter for ~1 sec timeout
+
 	org 0x0000
 boot:
 	jp startmon
@@ -45,8 +48,9 @@ boot:
 ult_msg:
         db "\r\nZ80 computer board, z80ultst version 0.1"
 	include "tbuilt.z80"
+	db "\r\n", 0
 ultagn_msg:
-	db "\r\npress 'r' key to reboot\r\n", 0
+	db "press 'r' key to reboot\r\n", 0
 reboot_msg:
 	db "rebooting and reloads from EPROM\r\n", 0
 
@@ -60,26 +64,27 @@ startmon:
 	call sel_a_sio
 	ld hl, ult_msg
 	call print_string
-ultagn:
-	call getc
-	cp 'r'
-	jr z, ultboot
+notr:
 	ld hl, ultagn_msg
 	call print_string
-	jr ultagn
-ultboot:
-	ld hl, reboot_msg
-	call print_string
-blk:
+ultagn:
 	out (LEDON), a
-	ld a, 1
-	call delay
+	ld b, 1
+	call getct
+	jp c, nochar
+	cp 'r'
+	jr z, ultboot
+	jr notr
+nochar:
 	out (LEDOFF), a
 	ld a, 1
 	call delay
-	jr blk
-
-;	jp 0x8003
+	jr ultagn
+ultboot:
+	out (LEDOFF), a
+	ld hl, reboot_msg
+	call print_string
+	jp 0x8003
 
 ; Routines to initialize and use i/o devices
 ;
@@ -257,6 +262,43 @@ getc:
 	ld c, a
 	in a, (c)		; read character
 	pop bc
+	ret
+
+; getct: waits for a byte to be available with timeout and reads it
+; reg B - timeout in seconds
+; returns:
+;   Carry = 1: timeout, Carry = 0: no timeout
+;   reg A - read byte
+getct:
+	push bc
+	push de
+	ld de, GETCTM
+getcloop:
+	ld a, (sio_ctrl)
+	ld c, a
+	in a, (c)		; read RR0
+	bit 0, a		; check if bit 0 is set
+	jr nz, getchrin		; character available
+	dec de
+	ld a, d
+	or e
+	jr nz, getcloop		; inner loop
+	djnz getcloop		; outer loop, number of seconds
+	jr getcnochr		; timeout
+getchrin:
+	ld a, (sio_data)
+	ld c, a
+	in a, (c)		; read character
+	pop de
+	pop bc
+	scf
+	ccf			; Carry = 0, no timeout
+	ret
+getcnochr:
+	ld a, 0
+	pop de
+	pop bc
+	scf			; Carry = 1, timeout
 	ret
 
 ; print_string: prints a string which starts at adress HL

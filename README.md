@@ -23,3 +23,5 @@ In addition there is:
 - some resistors and capacitors
 
 A test program to verify the operation of the board is also available.
+
+Also a simple monitor with Xmodem upload to RAM was added.

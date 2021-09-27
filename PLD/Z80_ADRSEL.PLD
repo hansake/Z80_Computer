@@ -1,7 +1,7 @@
 Name            Z80_ADRSEL;
 Partno          U2;
-Revision        1.1;
-Date            2021-07-27;
+Revision        1.2;
+Date            2021-09-26;
 Designer        hal;
 Company         atHome;
 Location        None;
@@ -37,6 +37,8 @@ Pin 19 = SIOCE;
 Pin 18 = CTCCE;
 Pin 17 = PIOCE;
 Pin 16 = MEMSEL;
+Pin 15 = LED;
+
 
 /*
  * Logic
@@ -63,6 +65,15 @@ MEMSEL.AR = 'b'0;
 SIOCE = !(!IORQ & !A2 & A3 & !A4 & !A5 & !A6 & !A7); /* Addresses 0x08 - 0x0b selects SIO */
 CTCCE = !(!IORQ & A2 & A3 & !A4 & !A5 & !A6 & !A7); /* Addresses 0x0c - 0x0f selects CTC */
 PIOCE = !(!IORQ & !A2 & !A3 & A4 & !A5 & !A6 & !A7); /* Addresses 0x10 - 0x13 selects PIO */
+
+/* Decode I/O addresses to control LED on/off */
+
+LEDOFF = !IORQ & MREQ & !WR & A2 & !A3 & A4 & !A5 & !A6 & !A7; /* Write to 0x14 - 0x17 turns LED off */
+LEDON = !IORQ & MREQ & !WR & !A2 & A3 & A4 & !A5 & !A6 & !A7; /* Write to 0x18 - 0x1f turns LED on */
+
+LED.D = ((LED & !LEDOFF)  # LEDON) & RESET;
+LED.SP = 'b'0;
+LED.AR = 'b'0;
 
 /* Decode memory addresses */
 

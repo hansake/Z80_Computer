@@ -22,6 +22,8 @@ In addition there is:
 - a reset circuit using LM555 (and a transistor to invert the reset signal)
 - some resistors and capacitors
 
+An interface to a microSD memory card using SPI was added, but not testsed yet.
+
 A test program to verify the operation of the board is also available.
 
 Also a simple monitor with Xmodem upload to RAM was added.

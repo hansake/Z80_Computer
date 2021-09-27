@@ -944,6 +944,8 @@ int main(int argc, char** argv) {
         }
     }
 
+    if (result != 0)
+        printf("Operation unsuccessful, maybe try again\n");
     if (verbose) {
         printf("result=%i\n", (char)result);
     }

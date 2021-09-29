@@ -1,0 +1,19 @@
+Z80 computer board, z80mon version 1.2, Built 2021-09-29 16:11                  
+Press 't' to start test                                                         
+      'u' to upload file to memory                                              
+      'r' to reload from EPROM                                                  
+      'g' to execute (go) from RAM address 0x0000                               
+upload file using Xmodem                                                        
+ upload complete                                                                
+Z80 computer board, z80mon version 1.2, Built 2021-09-29 16:11                  
+Press 't' to start test                                                         
+      'u' to upload file to memory                                              
+      'r' to reload from EPROM                                                  
+      'g' to execute (go) from RAM address 0x0000                               
+executing code from address 0x0000 in RAM                                       
+Z80 computer board, z80mon version 1.2, Built 2021-09-29 16:11                  
+Press 't' to start test                                                         
+      'u' to upload file to memory                                              
+      'r' to reload from EPROM                                                  
+      'g' to execute (go) from RAM address 0x0000       
+

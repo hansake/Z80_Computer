@@ -25,17 +25,17 @@
 			Segment No. 2	Type: data
 			=============
 
-        start: 0x2181         size: 0x00C0         finish: 0x2241
+        start: 0x2181         size: 0x00C8         finish: 0x2249
 
 			Segment No. 3	Type: bss
 			=============
 
-        start: 0x2241         size: 0x0200         finish: 0x2441
+        start: 0x2249         size: 0x0200         finish: 0x2449
 
 			Segment No. 4	Type: stack
 			=============
 
-        start: 0x2241         size: 0x0000         finish: 0x2241
+        start: 0x2249         size: 0x0000         finish: 0x2249
 
 
 
@@ -51,237 +51,237 @@
 MODULE: crtsz80.o
 		TEXT  at 0x0000 size: 0x004C 
 		DATA  at 0x2181 size: 0x0001 
-		BSS   at 0x2241 size: 0x0000 
+		BSS   at 0x2249 size: 0x0000 
 
 MODULE: wtest.o
 		TEXT  at 0x004C size: 0x0177 
-		DATA  at 0x2182 size: 0x0067 
-		BSS   at 0x2241 size: 0x0200 
+		DATA  at 0x2182 size: 0x006F 
+		BSS   at 0x2249 size: 0x0200 
 
 MODULE: decode.o(/opt/wsl/lib/z80/olib.80)
 		TEXT  at 0x01C3 size: 0x00C1 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: cputf.o(/opt/wsl/lib/z80/olib.80)
 		TEXT  at 0x0284 size: 0x0652 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: lenstr.o(/opt/wsl/lib/z80/olib.80)
 		TEXT  at 0x08D6 size: 0x0028 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ltob.o(/opt/wsl/lib/z80/olib.80)
 		TEXT  at 0x08FE size: 0x013D 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: stob.o(/opt/wsl/lib/z80/olib.80)
 		TEXT  at 0x0A3B size: 0x00E2 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: wsdtoe.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x0B1D size: 0x0025 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: wsdtof.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x0B42 size: 0x0025 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dtoe.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x0B67 size: 0x02A4 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dtof.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x0E0B size: 0x0226 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: round.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x1031 size: 0x00A6 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: cnorm.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x10D7 size: 0x028B 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dtento.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x1362 size: 0x0170 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: huge.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x14D2 size: 0x0010 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: unpack.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x14E2 size: 0x0016 
-		DATA  at 0x21E9 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: cfcon.o(/opt/wsl/lib/z80/libd.80)
 		TEXT  at 0x14F8 size: 0x0000 
-		DATA  at 0x21E9 size: 0x0044 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x21F1 size: 0x0044 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dcmp.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x14F8 size: 0x008B 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ddiv.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1583 size: 0x0166 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dmul.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x16E9 size: 0x0120 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dmvl.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1809 size: 0x0023 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dneg.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x182C size: 0x0015 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dsub.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1841 size: 0x0043 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dtd.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1884 size: 0x0022 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dtl.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x18A6 size: 0x00AC 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: fmvl.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1952 size: 0x001B 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ibc.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x196D size: 0x0002 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: idiv.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x196F size: 0x009E 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ilsh.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1A0D size: 0x006F 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ladd.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1A7C size: 0x002B 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: lclt.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1AA7 size: 0x0029 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ldiv.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1AD0 size: 0x0195 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: llsh.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1C65 size: 0x008C 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: lmulz80.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1CF1 size: 0x0096 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: lneg.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1D87 size: 0x0021 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: lsub.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1DA8 size: 0x002C 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: ltd.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1DD4 size: 0x00A5 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: mvl.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1E79 size: 0x001C 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: sav.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1E95 size: 0x002C 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: savs.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1EC1 size: 0x0015 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: savs0.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1ED6 size: 0x000F 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: toram.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1EE5 size: 0x0030 
-		DATA  at 0x222D size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: cregs.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1F15 size: 0x0000 
-		DATA  at 0x222D size: 0x0014 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2235 size: 0x0014 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: dadd.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1F15 size: 0x00E7 
-		DATA  at 0x2241 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2249 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: repk.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x1FFC size: 0x00F0 
-		DATA  at 0x2241 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2249 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: unpk.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x20EC size: 0x006E 
-		DATA  at 0x2241 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2249 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 MODULE: zret.o(/opt/wsl/lib/z80/libm.80)
 		TEXT  at 0x215A size: 0x0027 
-		DATA  at 0x2241 size: 0x0000 
-		BSS   at 0x2441 size: 0x0000 
+		DATA  at 0x2249 size: 0x0000 
+		BSS   at 0x2449 size: 0x0000 
 
 
 
@@ -300,27 +300,27 @@ _in PUBLIC  at 0x0027 in text section  of Segment No. 1
 _out PUBLIC  at 0x0038 in text section  of Segment No. 1
 	defined in:    crtsz80.o
 	referenced in: wtest.o
-c.r0 PUBLIC  at 0x222D in data section  of Segment No. 2
+c.r0 PUBLIC  at 0x2235 in data section  of Segment No. 2
 	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
 	referenced in: fmvl.o(/opt/wsl/lib/z80/libm.80) dmvl.o(/opt/wsl/lib/z80/libm.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
 	              dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80) ltob.o(/opt/wsl/lib/z80/olib.80)
 	              wtest.o
-c.r1 PUBLIC  at 0x2235 in data section  of Segment No. 2
+c.r1 PUBLIC  at 0x223D in data section  of Segment No. 2
 	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
 	referenced in: fmvl.o(/opt/wsl/lib/z80/libm.80) dmvl.o(/opt/wsl/lib/z80/libm.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
 	              ltob.o(/opt/wsl/lib/z80/olib.80)
-c.r2 PUBLIC  at 0x223D in data section  of Segment No. 2
+c.r2 PUBLIC  at 0x2245 in data section  of Segment No. 2
 	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
 	referenced in: sav.o(/opt/wsl/lib/z80/libm.80) dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
 	              round.o(/opt/wsl/lib/z80/libd.80) dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
 	              stob.o(/opt/wsl/lib/z80/olib.80) ltob.o(/opt/wsl/lib/z80/olib.80) lenstr.o(/opt/wsl/lib/z80/olib.80)
 	              cputf.o(/opt/wsl/lib/z80/olib.80) decode.o(/opt/wsl/lib/z80/olib.80)
-c.r3 PUBLIC  at 0x223F in data section  of Segment No. 2
+c.r3 PUBLIC  at 0x2247 in data section  of Segment No. 2
 	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
 	referenced in: sav.o(/opt/wsl/lib/z80/libm.80) dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
 	              dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80) stob.o(/opt/wsl/lib/z80/olib.80)
 	              cputf.o(/opt/wsl/lib/z80/olib.80) decode.o(/opt/wsl/lib/z80/olib.80)
-__bss PUBLIC  at 0x2241 in bss  section  of Segment No. 3
+__bss PUBLIC  at 0x2249 in bss  section  of Segment No. 3
 	defined in:    crtsz80.o
 _dtoe PUBLIC  at 0x0B1D in text section  of Segment No. 1
 	defined in:    wsdtoe.o(/opt/wsl/lib/z80/libd.80)
@@ -511,12 +511,12 @@ c.ursh PUBLIC  at 0x1A50 in text section  of Segment No. 1
 c.zret PUBLIC  at 0x2169 in text section  of Segment No. 1
 	defined in:    zret.o(/opt/wsl/lib/z80/libm.80)
 	referenced in: lclt.o(/opt/wsl/lib/z80/libm.80) dcmp.o(/opt/wsl/lib/z80/libm.80)
-__dtens PUBLIC  at 0x21E9 in data section  of Segment No. 2
+__dtens PUBLIC  at 0x21F1 in data section  of Segment No. 2
 	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
 	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
-__dzero PUBLIC  at 0x2221 in data section  of Segment No. 2
+__dzero PUBLIC  at 0x2229 in data section  of Segment No. 2
 	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
-__ntens PUBLIC  at 0x222B in data section  of Segment No. 2
+__ntens PUBLIC  at 0x2233 in data section  of Segment No. 2
 	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
 	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80)
 __round PUBLIC  at 0x1031 in text section  of Segment No. 1
@@ -536,7 +536,7 @@ _lenstr PUBLIC  at 0x08D6 in text section  of Segment No. 1
 _reload PUBLIC  at 0x0049 in text section  of Segment No. 1
 	defined in:    crtsz80.o
 	referenced in: wtest.o
-_txtout PUBLIC  at 0x2241 in bss  section  of Segment No. 3
+_txtout PUBLIC  at 0x2249 in bss  section  of Segment No. 3
 	defined in:    wtest.o
 c.rets0 PUBLIC  at 0x1EE0 in text section  of Segment No. 1
 	defined in:    savs0.o(/opt/wsl/lib/z80/libm.80)
@@ -554,7 +554,7 @@ c.ulrsh PUBLIC  at 0x1CC2 in text section  of Segment No. 1
 __dtento PUBLIC  at 0x1362 in text section  of Segment No. 1
 	defined in:    dtento.o(/opt/wsl/lib/z80/libd.80)
 	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
-__memory PUBLIC  at 0x2441 in bss  section  of Segment No. 3
+__memory PUBLIC  at 0x2449 in bss  section  of Segment No. 3
 	defined in:    command line
 	referenced in: crtsz80.o
 __unpack PUBLIC  at 0x14E2 in text section  of Segment No. 1
@@ -562,9 +562,9 @@ __unpack PUBLIC  at 0x14E2 in text section  of Segment No. 1
 	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
 _prt_str PUBLIC  at 0x0069 in text section  of Segment No. 1
 	defined in:    wtest.o
-__maxprec PUBLIC  at 0x2229 in data section  of Segment No. 2
+__maxprec PUBLIC  at 0x2231 in data section  of Segment No. 2
 	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
 	referenced in: dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
-__romdata PUBLIC  at 0x2341 in bss  section  of Segment No. 3
+__romdata PUBLIC  at 0x2349 in bss  section  of Segment No. 3
 	defined in:    wtest.o
 	referenced in: toram.o(/opt/wsl/lib/z80/libm.80)

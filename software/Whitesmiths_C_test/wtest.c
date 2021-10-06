@@ -54,7 +54,8 @@ int main()
 			reload();
 			}
 		ledon();
-		decode(txtout, sizeof(txtout), "Whitesmiths/Cosmic Z80 C compiler, printing line: %i Ctrl-C to reload\r\n", line);
+		decode(txtout, sizeof(txtout),
+			"Testing Whitesmiths/Cosmic Z80 C compiler, printing line: %i Ctrl-C to reload\r\n", line);
 		prt_str(txtout);
 		line++;
 		for (ltim = 1000; 0 < ltim; ltim--)

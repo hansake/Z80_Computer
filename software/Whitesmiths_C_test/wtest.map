@@ -1,0 +1,570 @@
+
+
+
+			============================
+			|                          |
+			|      MAP INFORMATION     |
+			|                          |
+			============================
+
+
+
+			============================
+			|                          |
+			|         SEGMENTS         |
+			|                          |
+			============================
+
+
+
+			Segment No. 1	Type: text
+			=============
+
+        start: 0x0000         size: 0x2181         finish: 0x2181
+
+			Segment No. 2	Type: data
+			=============
+
+        start: 0x2181         size: 0x00C0         finish: 0x2241
+
+			Segment No. 3	Type: bss
+			=============
+
+        start: 0x2241         size: 0x0200         finish: 0x2441
+
+			Segment No. 4	Type: stack
+			=============
+
+        start: 0x2241         size: 0x0000         finish: 0x2241
+
+
+
+
+			============================
+			|                          |
+			|         MODULES          |
+			|                          |
+			============================
+
+
+
+MODULE: crtsz80.o
+		TEXT  at 0x0000 size: 0x004C 
+		DATA  at 0x2181 size: 0x0001 
+		BSS   at 0x2241 size: 0x0000 
+
+MODULE: wtest.o
+		TEXT  at 0x004C size: 0x0177 
+		DATA  at 0x2182 size: 0x0067 
+		BSS   at 0x2241 size: 0x0200 
+
+MODULE: decode.o(/opt/wsl/lib/z80/olib.80)
+		TEXT  at 0x01C3 size: 0x00C1 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: cputf.o(/opt/wsl/lib/z80/olib.80)
+		TEXT  at 0x0284 size: 0x0652 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: lenstr.o(/opt/wsl/lib/z80/olib.80)
+		TEXT  at 0x08D6 size: 0x0028 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ltob.o(/opt/wsl/lib/z80/olib.80)
+		TEXT  at 0x08FE size: 0x013D 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: stob.o(/opt/wsl/lib/z80/olib.80)
+		TEXT  at 0x0A3B size: 0x00E2 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: wsdtoe.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x0B1D size: 0x0025 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: wsdtof.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x0B42 size: 0x0025 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dtoe.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x0B67 size: 0x02A4 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dtof.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x0E0B size: 0x0226 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: round.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x1031 size: 0x00A6 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: cnorm.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x10D7 size: 0x028B 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dtento.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x1362 size: 0x0170 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: huge.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x14D2 size: 0x0010 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: unpack.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x14E2 size: 0x0016 
+		DATA  at 0x21E9 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: cfcon.o(/opt/wsl/lib/z80/libd.80)
+		TEXT  at 0x14F8 size: 0x0000 
+		DATA  at 0x21E9 size: 0x0044 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dcmp.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x14F8 size: 0x008B 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ddiv.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1583 size: 0x0166 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dmul.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x16E9 size: 0x0120 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dmvl.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1809 size: 0x0023 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dneg.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x182C size: 0x0015 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dsub.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1841 size: 0x0043 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dtd.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1884 size: 0x0022 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dtl.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x18A6 size: 0x00AC 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: fmvl.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1952 size: 0x001B 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ibc.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x196D size: 0x0002 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: idiv.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x196F size: 0x009E 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ilsh.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1A0D size: 0x006F 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ladd.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1A7C size: 0x002B 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: lclt.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1AA7 size: 0x0029 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ldiv.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1AD0 size: 0x0195 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: llsh.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1C65 size: 0x008C 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: lmulz80.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1CF1 size: 0x0096 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: lneg.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1D87 size: 0x0021 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: lsub.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1DA8 size: 0x002C 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: ltd.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1DD4 size: 0x00A5 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: mvl.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1E79 size: 0x001C 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: sav.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1E95 size: 0x002C 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: savs.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1EC1 size: 0x0015 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: savs0.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1ED6 size: 0x000F 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: toram.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1EE5 size: 0x0030 
+		DATA  at 0x222D size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: cregs.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1F15 size: 0x0000 
+		DATA  at 0x222D size: 0x0014 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: dadd.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1F15 size: 0x00E7 
+		DATA  at 0x2241 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: repk.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x1FFC size: 0x00F0 
+		DATA  at 0x2241 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: unpk.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x20EC size: 0x006E 
+		DATA  at 0x2241 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+MODULE: zret.o(/opt/wsl/lib/z80/libm.80)
+		TEXT  at 0x215A size: 0x0027 
+		DATA  at 0x2241 size: 0x0000 
+		BSS   at 0x2441 size: 0x0000 
+
+
+
+
+			============================
+			|                          |
+			|          SYMBOLS         |
+			|                          |
+			============================
+
+
+
+_in PUBLIC  at 0x0027 in text section  of Segment No. 1
+	defined in:    crtsz80.o
+	referenced in: wtest.o
+_out PUBLIC  at 0x0038 in text section  of Segment No. 1
+	defined in:    crtsz80.o
+	referenced in: wtest.o
+c.r0 PUBLIC  at 0x222D in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: fmvl.o(/opt/wsl/lib/z80/libm.80) dmvl.o(/opt/wsl/lib/z80/libm.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+	              dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80) ltob.o(/opt/wsl/lib/z80/olib.80)
+	              wtest.o
+c.r1 PUBLIC  at 0x2235 in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: fmvl.o(/opt/wsl/lib/z80/libm.80) dmvl.o(/opt/wsl/lib/z80/libm.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+	              ltob.o(/opt/wsl/lib/z80/olib.80)
+c.r2 PUBLIC  at 0x223D in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: sav.o(/opt/wsl/lib/z80/libm.80) dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+	              round.o(/opt/wsl/lib/z80/libd.80) dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
+	              stob.o(/opt/wsl/lib/z80/olib.80) ltob.o(/opt/wsl/lib/z80/olib.80) lenstr.o(/opt/wsl/lib/z80/olib.80)
+	              cputf.o(/opt/wsl/lib/z80/olib.80) decode.o(/opt/wsl/lib/z80/olib.80)
+c.r3 PUBLIC  at 0x223F in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: sav.o(/opt/wsl/lib/z80/libm.80) dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+	              dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80) stob.o(/opt/wsl/lib/z80/olib.80)
+	              cputf.o(/opt/wsl/lib/z80/olib.80) decode.o(/opt/wsl/lib/z80/olib.80)
+__bss PUBLIC  at 0x2241 in bss  section  of Segment No. 3
+	defined in:    crtsz80.o
+_dtoe PUBLIC  at 0x0B1D in text section  of Segment No. 1
+	defined in:    wsdtoe.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+_dtof PUBLIC  at 0x0B42 in text section  of Segment No. 1
+	defined in:    wsdtof.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+_exit PUBLIC  at 0x0025 in text section  of Segment No. 1
+	defined in:    crtsz80.o
+_ltob PUBLIC  at 0x08FE in text section  of Segment No. 1
+	defined in:    ltob.o(/opt/wsl/lib/z80/olib.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+_main PUBLIC  at 0x00C9 in text section  of Segment No. 1
+	defined in:    wtest.o
+	referenced in: crtsz80.o
+_stob PUBLIC  at 0x0A3B in text section  of Segment No. 1
+	defined in:    stob.o(/opt/wsl/lib/z80/olib.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+c.dtd PUBLIC  at 0x1884 in text section  of Segment No. 1
+	defined in:    dtd.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80) dtof.o(/opt/wsl/lib/z80/libd.80)
+	              dtoe.o(/opt/wsl/lib/z80/libd.80)
+c.dti PUBLIC  at 0x1913 in text section  of Segment No. 1
+	defined in:    dtl.o(/opt/wsl/lib/z80/libm.80)
+c.dtl PUBLIC  at 0x1929 in text section  of Segment No. 1
+	defined in:    dtl.o(/opt/wsl/lib/z80/libm.80)
+c.dtr PUBLIC  at 0x194A in text section  of Segment No. 1
+	defined in:    dtl.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+c.ibc PUBLIC  at 0x196D in text section  of Segment No. 1
+	defined in:    ibc.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+c.ihl PUBLIC  at 0x1ECE in text section  of Segment No. 1
+	defined in:    savs.o(/opt/wsl/lib/z80/libm.80)
+c.itd PUBLIC  at 0x1E28 in text section  of Segment No. 1
+	defined in:    ltd.o(/opt/wsl/lib/z80/libm.80)
+c.ltd PUBLIC  at 0x1E46 in text section  of Segment No. 1
+	defined in:    ltd.o(/opt/wsl/lib/z80/libm.80)
+c.mvl PUBLIC  at 0x1E79 in text section  of Segment No. 1
+	defined in:    mvl.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80) cputf.o(/opt/wsl/lib/z80/olib.80)
+c.ret PUBLIC  at 0x1EAC in text section  of Segment No. 1
+	defined in:    sav.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80) round.o(/opt/wsl/lib/z80/libd.80)
+	              dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80) stob.o(/opt/wsl/lib/z80/olib.80)
+	              ltob.o(/opt/wsl/lib/z80/olib.80) lenstr.o(/opt/wsl/lib/z80/olib.80) cputf.o(/opt/wsl/lib/z80/olib.80)
+	              decode.o(/opt/wsl/lib/z80/olib.80)
+c.sav PUBLIC  at 0x1E95 in text section  of Segment No. 1
+	defined in:    sav.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80) round.o(/opt/wsl/lib/z80/libd.80)
+	              dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80) stob.o(/opt/wsl/lib/z80/olib.80)
+	              ltob.o(/opt/wsl/lib/z80/olib.80) lenstr.o(/opt/wsl/lib/z80/olib.80) cputf.o(/opt/wsl/lib/z80/olib.80)
+	              decode.o(/opt/wsl/lib/z80/olib.80)
+c.utd PUBLIC  at 0x1E38 in text section  of Segment No. 1
+	defined in:    ltd.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+__data PUBLIC  at 0x2181 in data section  of Segment No. 2
+	defined in:    crtsz80.o
+__dtoe PUBLIC  at 0x0B67 in text section  of Segment No. 1
+	defined in:    dtoe.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: wsdtoe.o(/opt/wsl/lib/z80/libd.80)
+__dtof PUBLIC  at 0x0E0B in text section  of Segment No. 1
+	defined in:    dtof.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: wsdtof.o(/opt/wsl/lib/z80/libd.80)
+__huge PUBLIC  at 0x14D2 in text section  of Segment No. 1
+	defined in:    huge.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80)
+__norm PUBLIC  at 0x10DF in text section  of Segment No. 1
+	defined in:    cnorm.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
+__putf PUBLIC  at 0x030F in text section  of Segment No. 1
+	defined in:    cputf.o(/opt/wsl/lib/z80/olib.80)
+	referenced in: decode.o(/opt/wsl/lib/z80/olib.80)
+__text PUBLIC  at 0x0000 in text section  of Segment No. 1
+	defined in:    crtsz80.o
+__tiny PUBLIC  at 0x14DA in text section  of Segment No. 1
+	defined in:    huge.o(/opt/wsl/lib/z80/libd.80)
+_ctrlc PUBLIC  at 0x00A7 in text section  of Segment No. 1
+	defined in:    wtest.o
+_ledon PUBLIC  at 0x008F in text section  of Segment No. 1
+	defined in:    wtest.o
+_putct PUBLIC  at 0x004C in text section  of Segment No. 1
+	defined in:    wtest.o
+c.0mvd PUBLIC  at 0x1816 in text section  of Segment No. 1
+	defined in:    dmvl.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80) dtof.o(/opt/wsl/lib/z80/libd.80)
+	              dtoe.o(/opt/wsl/lib/z80/libd.80)
+c.0mvf PUBLIC  at 0x195F in text section  of Segment No. 1
+	defined in:    fmvl.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80)
+c.1mvd PUBLIC  at 0x1809 in text section  of Segment No. 1
+	defined in:    dmvl.o(/opt/wsl/lib/z80/libm.80)
+c.1mvf PUBLIC  at 0x1952 in text section  of Segment No. 1
+	defined in:    fmvl.o(/opt/wsl/lib/z80/libm.80)
+c.dadd PUBLIC  at 0x1F15 in text section  of Segment No. 1
+	defined in:    dadd.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dsub.o(/opt/wsl/lib/z80/libm.80)
+c.dcmp PUBLIC  at 0x14F8 in text section  of Segment No. 1
+	defined in:    dcmp.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+c.ddiv PUBLIC  at 0x1583 in text section  of Segment No. 1
+	defined in:    ddiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80)
+c.dmul PUBLIC  at 0x16E9 in text section  of Segment No. 1
+	defined in:    dmul.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+c.dneg PUBLIC  at 0x182C in text section  of Segment No. 1
+	defined in:    dneg.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80) dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
+c.dsub PUBLIC  at 0x1841 in text section  of Segment No. 1
+	defined in:    dsub.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+c.fmvd PUBLIC  at 0x1810 in text section  of Segment No. 1
+	defined in:    dmvl.o(/opt/wsl/lib/z80/libm.80)
+c.fmvl PUBLIC  at 0x1959 in text section  of Segment No. 1
+	defined in:    fmvl.o(/opt/wsl/lib/z80/libm.80)
+c.fneg PUBLIC  at 0x182C in text section  of Segment No. 1
+	defined in:    dneg.o(/opt/wsl/lib/z80/libm.80)
+c.idiv PUBLIC  at 0x196F in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtoe.o(/opt/wsl/lib/z80/libd.80)
+c.ilsh PUBLIC  at 0x1A0D in text section  of Segment No. 1
+	defined in:    ilsh.o(/opt/wsl/lib/z80/libm.80)
+c.imod PUBLIC  at 0x1995 in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dtoe.o(/opt/wsl/lib/z80/libd.80)
+c.irsh PUBLIC  at 0x1A2D in text section  of Segment No. 1
+	defined in:    ilsh.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+c.ladd PUBLIC  at 0x1A7C in text section  of Segment No. 1
+	defined in:    ladd.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80)
+c.lclt PUBLIC  at 0x1AA7 in text section  of Segment No. 1
+	defined in:    lclt.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80) wtest.o
+c.ldiv PUBLIC  at 0x1AD0 in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+c.llsh PUBLIC  at 0x1C65 in text section  of Segment No. 1
+	defined in:    llsh.o(/opt/wsl/lib/z80/libm.80)
+c.lmod PUBLIC  at 0x1B09 in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.80)
+c.lmul PUBLIC  at 0x1CF1 in text section  of Segment No. 1
+	defined in:    lmulz80.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+c.lneg PUBLIC  at 0x1D87 in text section  of Segment No. 1
+	defined in:    lneg.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80)
+c.lret PUBLIC  at 0x215A in text section  of Segment No. 1
+	defined in:    zret.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dadd.o(/opt/wsl/lib/z80/libm.80) mvl.o(/opt/wsl/lib/z80/libm.80) ltd.o(/opt/wsl/lib/z80/libm.80)
+	              lsub.o(/opt/wsl/lib/z80/libm.80) lmulz80.o(/opt/wsl/lib/z80/libm.80) llsh.o(/opt/wsl/lib/z80/libm.80)
+	              ldiv.o(/opt/wsl/lib/z80/libm.80) ladd.o(/opt/wsl/lib/z80/libm.80) ilsh.o(/opt/wsl/lib/z80/libm.80)
+	              idiv.o(/opt/wsl/lib/z80/libm.80) dtl.o(/opt/wsl/lib/z80/libm.80) dtd.o(/opt/wsl/lib/z80/libm.80)
+	              dsub.o(/opt/wsl/lib/z80/libm.80) dmul.o(/opt/wsl/lib/z80/libm.80) ddiv.o(/opt/wsl/lib/z80/libm.80)
+c.lrsh PUBLIC  at 0x1C93 in text section  of Segment No. 1
+	defined in:    llsh.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+c.lsub PUBLIC  at 0x1DA8 in text section  of Segment No. 1
+	defined in:    lsub.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: wtest.o
+c.repk PUBLIC  at 0x1FFC in text section  of Segment No. 1
+	defined in:    repk.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dadd.o(/opt/wsl/lib/z80/libm.80) ltd.o(/opt/wsl/lib/z80/libm.80) dmul.o(/opt/wsl/lib/z80/libm.80)
+	              ddiv.o(/opt/wsl/lib/z80/libm.80)
+c.rets PUBLIC  at 0x1ECF in text section  of Segment No. 1
+	defined in:    savs.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: wsdtof.o(/opt/wsl/lib/z80/libd.80) wsdtoe.o(/opt/wsl/lib/z80/libd.80) decode.o(/opt/wsl/lib/z80/olib.80)
+	              wtest.o crtsz80.o
+c.savs PUBLIC  at 0x1EC1 in text section  of Segment No. 1
+	defined in:    savs.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: wsdtof.o(/opt/wsl/lib/z80/libd.80) wsdtoe.o(/opt/wsl/lib/z80/libd.80) decode.o(/opt/wsl/lib/z80/olib.80)
+	              wtest.o crtsz80.o
+c.udiv PUBLIC  at 0x19BB in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80) stob.o(/opt/wsl/lib/z80/olib.80)
+c.ultd PUBLIC  at 0x1E60 in text section  of Segment No. 1
+	defined in:    ltd.o(/opt/wsl/lib/z80/libm.80)
+c.umod PUBLIC  at 0x19C3 in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80) stob.o(/opt/wsl/lib/z80/olib.80)
+c.unpk PUBLIC  at 0x20EC in text section  of Segment No. 1
+	defined in:    unpk.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: dadd.o(/opt/wsl/lib/z80/libm.80) dtl.o(/opt/wsl/lib/z80/libm.80) dmul.o(/opt/wsl/lib/z80/libm.80)
+	              ddiv.o(/opt/wsl/lib/z80/libm.80)
+c.ursh PUBLIC  at 0x1A50 in text section  of Segment No. 1
+	defined in:    ilsh.o(/opt/wsl/lib/z80/libm.80)
+c.zret PUBLIC  at 0x2169 in text section  of Segment No. 1
+	defined in:    zret.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: lclt.o(/opt/wsl/lib/z80/libm.80) dcmp.o(/opt/wsl/lib/z80/libm.80)
+__dtens PUBLIC  at 0x21E9 in data section  of Segment No. 2
+	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80) cnorm.o(/opt/wsl/lib/z80/libd.80)
+__dzero PUBLIC  at 0x2221 in data section  of Segment No. 2
+	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
+__ntens PUBLIC  at 0x222B in data section  of Segment No. 2
+	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: dtento.o(/opt/wsl/lib/z80/libd.80)
+__round PUBLIC  at 0x1031 in text section  of Segment No. 1
+	defined in:    round.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
+__toram PUBLIC  at 0x1EE5 in text section  of Segment No. 1
+	defined in:    toram.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: crtsz80.o
+_decode PUBLIC  at 0x0233 in text section  of Segment No. 1
+	defined in:    decode.o(/opt/wsl/lib/z80/olib.80)
+	referenced in: wtest.o
+_ledoff PUBLIC  at 0x009B in text section  of Segment No. 1
+	defined in:    wtest.o
+_lenstr PUBLIC  at 0x08D6 in text section  of Segment No. 1
+	defined in:    lenstr.o(/opt/wsl/lib/z80/olib.80)
+	referenced in: cputf.o(/opt/wsl/lib/z80/olib.80)
+_reload PUBLIC  at 0x0049 in text section  of Segment No. 1
+	defined in:    crtsz80.o
+	referenced in: wtest.o
+_txtout PUBLIC  at 0x2241 in bss  section  of Segment No. 3
+	defined in:    wtest.o
+c.rets0 PUBLIC  at 0x1EE0 in text section  of Segment No. 1
+	defined in:    savs0.o(/opt/wsl/lib/z80/libm.80)
+c.savs0 PUBLIC  at 0x1ED6 in text section  of Segment No. 1
+	defined in:    savs0.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: wtest.o
+c.uldiv PUBLIC  at 0x1B44 in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80)
+c.ulmod PUBLIC  at 0x1B80 in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.80)
+	referenced in: ltob.o(/opt/wsl/lib/z80/olib.80)
+c.ulrsh PUBLIC  at 0x1CC2 in text section  of Segment No. 1
+	defined in:    llsh.o(/opt/wsl/lib/z80/libm.80)
+__dtento PUBLIC  at 0x1362 in text section  of Segment No. 1
+	defined in:    dtento.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+__memory PUBLIC  at 0x2441 in bss  section  of Segment No. 3
+	defined in:    command line
+	referenced in: crtsz80.o
+__unpack PUBLIC  at 0x14E2 in text section  of Segment No. 1
+	defined in:    unpack.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: cnorm.o(/opt/wsl/lib/z80/libd.80)
+_prt_str PUBLIC  at 0x0069 in text section  of Segment No. 1
+	defined in:    wtest.o
+__maxprec PUBLIC  at 0x2229 in data section  of Segment No. 2
+	defined in:    cfcon.o(/opt/wsl/lib/z80/libd.80)
+	referenced in: dtof.o(/opt/wsl/lib/z80/libd.80) dtoe.o(/opt/wsl/lib/z80/libd.80)
+__romdata PUBLIC  at 0x2341 in bss  section  of Segment No. 3
+	defined in:    wtest.o
+	referenced in: toram.o(/opt/wsl/lib/z80/libm.80)

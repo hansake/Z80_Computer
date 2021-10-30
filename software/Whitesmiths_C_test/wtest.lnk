@@ -1,4 +1,0 @@
--o wtest.bin -h -t -rt -rd -cb
-+map=wtest.map +text -b0x0000 crtsz80.o wtest.o /opt/wsl/lib/z80/olib.80
-/opt/wsl/lib/z80/libd.80 /opt/wsl/lib/z80/libi.80 /opt/wsl/lib/z80/libm.80
-+def __memory=__bss__

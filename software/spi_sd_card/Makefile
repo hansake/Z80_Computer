@@ -4,17 +4,18 @@ CMD = sh
 COPY = cp -p
 RM = rm -fr
 
-TARGET = wtest.bin
+TARGET = sdcardtst.bin
 
 all: $(TARGET)
 
 %.o: %.c
+	date +'char builddate[] = "Built %F %R";' > builddate.h
 	$(ROOT)cx80 -proto cz80e.pro -I "|/opt/wsl/include/v30/" -dnostrict -s +o $<
 
 %.o: %.s
-	$(ROOT)cx80 -proto cz80e.pro +o $^
+	$(ROOT)cx80 -proto cz80e.pro -dlistcs +o $^
 
-wtest.bin: crtsz80.o wtest.o
+sdcardtst.bin: crtsz80spi.o sdcardtst.o
 	$(ROOT)cx80 -proto cz80e.pro -L$(LIBDIR) -o $@ -v -dold -dmap $^
 	cp $@ /home/hal/Z80_computer
 

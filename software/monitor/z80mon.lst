@@ -65,934 +65,962 @@
 0000			; copying the monitor to upper memory 
 0000			boot: 
 0000 11 00 f0			ld de, monitor 
-0003 21 0e 00			ld hl, moneprom 
+0003 21 6f 00			ld hl, moneprom 
 0006 01 ac 08			ld bc, monend - monitor 
 0009 ed b0			ldir 
 000b c3 00 f0			jp monitor 
 000e			 
-000e			; The monitor program is copied from this address in the EPROM 
-000e			; or RAM if uploaded 
-000e			moneprom: 
-000e			; The program starts here when copied from EPROM at boot 
-000e				org MONADR 
+000e			; The NMI routine is on the fixed address 0x0066 
+000e			nmipad: 
+000e 00...			ds 0x66 - (nmipad - boot) 
+0066			nmi: 
+0066 08				ex af,af' 
+0067 d9				exx 
+0068				; do something here if needed 
+0068 c3 6b 00			jp nmipatch 
+006b			nmipatch: 
+006b d9				exx 
+006c 08				ex af,af' 
+006d ed 45			retn 
+006f			nmiend: 
+006f			 
+006f			; The monitor program is copied from this address in the EPROM 
+006f			; or RAM if uploaded 
+006f			moneprom: 
+006f			; The program starts here when copied from EPROM at boot 
+006f				org MONADR 
 f000			monitor: 
-f000 c3 49 f0			jp startmon 
+f000 c3 4d f0			jp startmon 
 f003			 
 f003			; Fixed address for reload from EPROM: MONADR + 3 
 f003			fixedreload: 
-f003 d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range 
-f005 c3 00 00			jp 0x0000		; and jump to start of EPROM 
-f008			 
-f008			; Messages to send on serial channels at start and test 
-f008			ver_msg: 
-f008 ..			        db "Z80 computer board, z80mon version 1.2" 
-f02e				include "mbuilt.z80" 
-f02e ..			    db ", Built 2021-09-29 16:11" 
+f003 3e 03			ld a, 00000011b		; sw reset CTC2 to stop NMIs 
+f005 d3 0e			out (CTC_CH2), a 
+f007 d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range 
+f009 c3 00 00			jp 0x0000		; and jump to start of EPROM 
+f00c			 
+f00c			; Messages to send on serial channels at start and test 
+f00c			ver_msg: 
+f00c ..			        db "Z80 computer board, z80mon version 1.6" 
+f032				include "mbuilt.z80" 
+f032 ..			    db ", Built 2021-10-24 17:42" 
 # End of file mbuilt.z80
-f046 .. 00			db "\r\n", 0 
-f049			 
-f049			startmon: 
-f049 31 00 00			ld sp, 0x0000	; initialize stack pointer 
-f04c						; first push or call will use 0xffff 
-f04c			 
-f04c 3e 01			ld a,1		; one LED blink after initial start 
-f04e cd fb f4			call blink 
-f051 3e 03			ld a,3 
-f053 cd 0b f5			call delay 
-f056			 
-f056 cd 17 f4			call ctc_init 
-f059 3e 02			ld a,2          ; two LED blinks after CTC init 
-f05b cd fb f4			call blink 
-f05e 3e 03			ld a,3 
-f060 cd 0b f5			call delay 
-f063			 
-f063 cd 3c f4			call sio_init 
-f066 3e 03			ld a,3          ; three LED blinks after SIO init 
-f068 cd fb f4			call blink 
-f06b 3e 03			ld a,3 
-f06d cd 0b f5			call delay 
-f070			 
-f070 cd fe f3			call pio_init 
-f073 3e 04			ld a,4          ; four LED blinks after PIO init 
-f075 cd fb f4			call blink 
-f078 3e 03			ld a,3 
-f07a cd 0b f5			call delay 
-f07d			 
-f07d				; Boot menu 
-f07d			 
-f07d 3e 00			ld a, 0 
-f07f 32 27 f8			ld (xdebug),a  
-f082			menu: 
-f082 f3				di 
-f083			 
-f083 3e 00			ld a, 0 
-f085 d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range 
-f087				 
-f087 cd 59 f4			call sel_a_sio 
-f08a 21 08 f0			ld hl, ver_msg 
-f08d cd eb f4			call print_string 
-f090 21 cf f0			ld hl, menu_msg 
-f093 cd eb f4			call print_string 
-f096 cd 9f f4			call getc 
-f099 fe 74			cp 't'		;test memory, i/o and interrupt 
-f09b ca 49 f5			jp z,testprog 
-f09e fe 75			cp 'u'		;upload program to RAM address 0x0000 with Xmodem 
-f0a0 ca 60 f1			jp z,upload 
-f0a3 fe 72			cp 'r'		;reload from EPROM 
-f0a5 ca dc f2			jp z,reload 
-f0a8 fe 67			cp 'g'		;run uploaded progran from ARM address 0x0000 
-f0aa ca 06 f3			jp z,execute 
-f0ad fe 64			cp 'd'		;hidden command to test serial input delay 
-f0af ca 77 f3			jp z,cttest 
-f0b2 fe 30			cp '0'		;hidden command to turn off x-modem debug (default) 
-f0b4 ca bf f0			jp z,xdeboff 
-f0b7 fe 31			cp '1'		;hidden command to turn on x-modem debug 
-f0b9 ca c7 f0			jp z,xdebon 
-f0bc c3 82 f0			jp menu 
-f0bf			 
-f0bf			xdeboff: 
-f0bf 3e 00			ld a, 0 
-f0c1 32 27 f8			ld (xdebug),a  
-f0c4 c3 82 f0			jp menu 
-f0c7			xdebon: 
-f0c7 3e 01			ld a, 1 
-f0c9 32 27 f8			ld (xdebug),a  
-f0cc c3 82 f0			jp menu 
-f0cf			 
-f0cf			menu_msg: 
-f0cf ..				db "Press 't' to start test\r\n" 
-f0e8 ..				db "      'u' to upload file to memory\r\n" 
-f10c ..				db "      'r' to reload from EPROM\r\n" 
-f12c ..				db "      'g' to execute (go) from RAM address 0x0000\r\n" 
-f15f 00				db 0 
-f160			 
-f160			; Upload file to RAM 
-f160			upload: 
-f160 21 98 f2			ld hl, upload_msg 
-f163 cd eb f4			call print_string 
-f166 d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
-f168			 
-f168			; Xmodem recieve file and put in memory 
-f168			; protocol description 
-f168			;   http://pauillac.inria.fr/~doligez/zmodem/ymodem.txt 
-f168			; (much of the code is proudly stolen from PCGET.ASM) 
-f168			xupload: 
-f168 3a 27 f8			ld a, (xdebug) 
-f16b b7				or a 
-f16c 28 0f			jr z, xnodebu0 
-f16e 3e 0d			ld a, '\r' 
-f170 cd f4 f3			call dputc 
-f173 3e 0a			ld a, '\n' 
-f175 cd f4 f3			call dputc 
-f178 3e 30			ld a, '0' 
-f17a cd f4 f3			call dputc 
-f17d			xnodebu0: 
-f17d			 
-f17d				; gobble up garbage characters from the line 
-f17d			xpurge: 
-f17d 06 01			ld b, 1 
-f17f cd ab f4			call getct 
-f182 38 07			jr c, xrecieve 
-f184 fe 03			cp CTRLC		;Ctrl-C was recieved 
-f186 ca 8f f2			jp z, xabort 
-f189 18 f2			jr xpurge		;loop until sender done 
-f18b			 
-f18b				; Recieve file and put in memory 
-f18b			xrecieve: 
-f18b 21 00 00			ld hl, 0x0000		;where to start putting memory in RAM 
-f18e 22 28 f8			ld (memptr), hl 
-f191			 
-f191 3e 00			ld a, 0			;initialize last sector number 
-f193 32 2b f8			ld (xlsectno), a 
-f196			 
-f196 3e 15			ld a, NAK		;send NAK 
-f198 cd 91 f4			call putc 
-f19b			 
-f19b				; Recieve header 
-f19b			xgethdr: 
-f19b 3a 27 f8			ld a, (xdebug) 
-f19e b7				or a 
-f19f 28 05			jr z, xnodebu1 
-f1a1 3e 31			ld a, '1' 
-f1a3 cd f4 f3			call dputc 
-f1a6			xnodebu1: 
-f1a6 06 03			ld b, 3			;3 seconds timeout 
-f1a8 cd ab f4			call getct 
-f1ab 30 19			jr nc, xgethchr		;no timeout, identify character in header 
-f1ad			 
-f1ad				; Header error or timeout 
-f1ad				; purge input characters and send NAK 
-f1ad			xhdrerr: 
-f1ad 3a 27 f8			ld a, (xdebug) 
-f1b0 b7				or a 
-f1b1 28 05			jr z, xnodebue 
-f1b3 3e 65			ld a, 'e' 
-f1b5 cd f4 f3			call dputc 
-f1b8			xnodebue: 
-f1b8 06 01			ld b, 1 
-f1ba cd ab f4			call getct 
-f1bd 30 ee			jr nc, xhdrerr		;loop until sender done 
-f1bf 3e 15			ld a, NAK 
-f1c1 cd 91 f4			call putc 
-f1c4 18 d5			jr xgethdr		;try to get header again 
-f1c6			 
-f1c6				; Which type of header? SOH, EOT or Ctrl-C to abort 
-f1c6			xgethchr: 
-f1c6 fe 01			cp SOH 
-f1c8 28 0c			jr z, xgotsoh 
-f1ca fe 03			cp CTRLC 
-f1cc ca 8f f2			jp z, xabort 
-f1cf fe 04			cp EOT 
-f1d1 ca 66 f2			jp z, xgoteot 
-f1d4 18 d7			jr xhdrerr 
-f1d6			 
-f1d6				; Got SOH header 
-f1d6			xgotsoh: 
-f1d6 3a 27 f8			ld a, (xdebug) 
-f1d9 b7				or a 
-f1da 28 05			jr z, xnodebu2 
-f1dc 3e 32			ld a, '2' 
-f1de cd f4 f3			call dputc 
-f1e1			xnodebu2: 
-f1e1			 
-f1e1 06 01			ld b, 1 
-f1e3 cd ab f4			call getct 
-f1e6 38 c5			jr c, xhdrerr 
-f1e8 57				ld d, a			;sector number 
-f1e9 06 01			ld b, 1 
-f1eb cd ab f4			call getct 
-f1ee 38 bd			jr c, xhdrerr 
-f1f0 2f				cpl			;complement of block number 
-f1f1 ba				cp d 
-f1f2 28 02			jr z, xgetsec		;good sector header, get sector 
-f1f4 18 b7			jr xhdrerr 
-f1f6			 
-f1f6				; Get sector and put in temporary buffer 
-f1f6			xgetsec: 
-f1f6 3a 27 f8			ld a, (xdebug) 
-f1f9 b7				or a 
-f1fa 28 05			jr z, xnodebu3 
-f1fc 3e 33			ld a, '3' 
-f1fe cd f4 f3			call dputc 
-f201			xnodebu3: 
-f201			 
-f201 7a				ld a, d			 
-f202 32 2a f8			ld (xcsectno), a	;current sector 
-f205 0e 00			ld c, 0			;init checksum 
-f207 21 2c f8			ld hl, xsectbuf		;temporary buffer for uploaded data 
-f20a 16 80			ld d, 128		;sector length 
-f20c			xgetschar: 
-f20c 06 01			ld b, 1 
-f20e cd ab f4			call getct 
-f211 38 9a			jr c, xhdrerr 
-f213 77				ld (hl), a		;store byte in memory 
-f214 81				add c			;calculate checksum 
-f215 4f				ld c, a 
-f216 23				inc hl 
-f217 15				dec d 
-f218 20 f2			jr nz, xgetschar 
-f21a			 
-f21a				; Verify the checksum 
-f21a 51				ld d, c			;verify checksum 
-f21b 06 01			ld b, 1 
-f21d cd ab f4			call getct 
-f220 38 8b			jr c, xhdrerr 
-f222 ba				cp d 
-f223 20 88			jr nz, xhdrerr 
-f225			 
-f225				; Check that this sector number is last sector + 1 
-f225 3a 2a f8			ld a, (xcsectno) 
-f228 47				ld b, a 
-f229 3a 2b f8			ld a, (xlsectno) 
-f22c 3c				inc a 
-f22d b8				cp b 
-f22e 28 0d			jr z, xwrtsec		;expected sector number ok 
-f230			 
-f230				; sender missed last ACK 
-f230 3a 27 f8			ld a, (xdebug) 
-f233 b7				or a 
-f234 28 05			jr z, xnodebum 
-f236 3e 6d			ld a, 'm' 
-f238 cd f4 f3			call dputc 
-f23b			xnodebum: 
-f23b 18 21			jr xsndack 
+f04a .. 00			db "\r\n", 0 
+f04d			 
+f04d			startmon: 
+f04d 31 00 00			ld sp, 0x0000	; initialize stack pointer 
+f050						; first push or call will use 0xffff 
+f050			 
+f050 3e 01			ld a,1		; one LED blink after initial start 
+f052 cd 11 f5			call blink 
+f055 3e 03			ld a,3 
+f057 cd 21 f5			call delay 
+f05a			 
+f05a cd 31 f4			call ctc_init 
+f05d 3e 02			ld a,2          ; two LED blinks after CTC init 
+f05f cd 11 f5			call blink 
+f062 3e 03			ld a,3 
+f064 cd 21 f5			call delay 
+f067			 
+f067 cd 52 f4			call sio_init 
+f06a 3e 03			ld a,3          ; three LED blinks after SIO init 
+f06c cd 11 f5			call blink 
+f06f 3e 03			ld a,3 
+f071 cd 21 f5			call delay 
+f074			 
+f074 cd 18 f4			call pio_init 
+f077 3e 04			ld a,4          ; four LED blinks after PIO init 
+f079 cd 11 f5			call blink 
+f07c 3e 03			ld a,3 
+f07e cd 21 f5			call delay 
+f081			 
+f081				; Boot menu 
+f081			 
+f081 3e 00			ld a, 0 
+f083 32 27 f8			ld (xdebug),a  
+f086			menu: 
+f086 f3				di 
+f087			 
+f087				; Copy NMI code to RAM also 
+f087 21 66 00			ld hl, nmi 
+f08a 11 ac f8			ld de, monend 
+f08d 01 09 00			ld bc, nmiend - nmi 
+f090 ed b0			ldir 
+f092 d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
+f094 21 ac f8			ld hl, monend 
+f097 11 66 00			ld de, nmi 
+f09a 01 09 00			ld bc, nmiend - nmi 
+f09d ed b0			ldir 
+f09f			 
+f09f cd 6f f4			call sel_a_sio 
+f0a2 21 0c f0			ld hl, ver_msg 
+f0a5 cd 01 f5			call print_string 
+f0a8 21 e7 f0			ld hl, menu_msg 
+f0ab cd 01 f5			call print_string 
+f0ae cd b5 f4			call getc 
+f0b1 fe 74			cp 't'		;test memory, i/o and interrupt 
+f0b3 ca 5f f5			jp z,testprog 
+f0b6 fe 75			cp 'u'		;upload program to RAM address 0x0000 with Xmodem 
+f0b8 ca 78 f1			jp z,upload 
+f0bb fe 72			cp 'r'		;reload from EPROM 
+f0bd ca f4 f2			jp z,reload 
+f0c0 fe 67			cp 'g'		;run uploaded progran from ARM address 0x0000 
+f0c2 ca 20 f3			jp z,execute 
+f0c5 fe 64			cp 'd'		;hidden command to test serial input delay 
+f0c7 ca 91 f3			jp z,cttest 
+f0ca fe 30			cp '0'		;hidden command to turn off x-modem debug (default) 
+f0cc ca d7 f0			jp z,xdeboff 
+f0cf fe 31			cp '1'		;hidden command to turn on x-modem debug 
+f0d1 ca df f0			jp z,xdebon 
+f0d4 c3 86 f0			jp menu 
+f0d7			 
+f0d7			xdeboff: 
+f0d7 3e 00			ld a, 0 
+f0d9 32 27 f8			ld (xdebug),a  
+f0dc c3 86 f0			jp menu 
+f0df			xdebon: 
+f0df 3e 01			ld a, 1 
+f0e1 32 27 f8			ld (xdebug),a  
+f0e4 c3 86 f0			jp menu 
+f0e7			 
+f0e7			menu_msg: 
+f0e7 ..				db "Press 't' to start test\r\n" 
+f100 ..				db "      'u' to upload file to memory\r\n" 
+f124 ..				db "      'r' to reload from EPROM\r\n" 
+f144 ..				db "      'g' to execute (go) from RAM address 0x0000\r\n" 
+f177 00				db 0 
+f178			 
+f178			; Upload file to RAM 
+f178			upload: 
+f178 21 b0 f2			ld hl, upload_msg 
+f17b cd 01 f5			call print_string 
+f17e				 
+f17e d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
+f180			 
+f180			; Xmodem recieve file and put in memory 
+f180			; protocol description 
+f180			;   http://pauillac.inria.fr/~doligez/zmodem/ymodem.txt 
+f180			; (much of the code is proudly stolen from PCGET.ASM) 
+f180			xupload: 
+f180 3a 27 f8			ld a, (xdebug) 
+f183 b7				or a 
+f184 28 0f			jr z, xnodebu0 
+f186 3e 0d			ld a, '\r' 
+f188 cd 0e f4			call dputc 
+f18b 3e 0a			ld a, '\n' 
+f18d cd 0e f4			call dputc 
+f190 3e 30			ld a, '0' 
+f192 cd 0e f4			call dputc 
+f195			xnodebu0: 
+f195			 
+f195				; gobble up garbage characters from the line 
+f195			xpurge: 
+f195 06 01			ld b, 1 
+f197 cd c1 f4			call getct 
+f19a 38 07			jr c, xrecieve 
+f19c fe 03			cp CTRLC		;Ctrl-C was recieved 
+f19e ca a7 f2			jp z, xabort 
+f1a1 18 f2			jr xpurge		;loop until sender done 
+f1a3			 
+f1a3				; Recieve file and put in memory 
+f1a3			xrecieve: 
+f1a3 21 00 00			ld hl, 0x0000		;where to start putting memory in RAM 
+f1a6 22 28 f8			ld (memptr), hl 
+f1a9			 
+f1a9 3e 00			ld a, 0			;initialize last sector number 
+f1ab 32 2b f8			ld (xlsectno), a 
+f1ae			 
+f1ae 3e 15			ld a, NAK		;send NAK 
+f1b0 cd a7 f4			call putc 
+f1b3			 
+f1b3				; Recieve header 
+f1b3			xgethdr: 
+f1b3 3a 27 f8			ld a, (xdebug) 
+f1b6 b7				or a 
+f1b7 28 05			jr z, xnodebu1 
+f1b9 3e 31			ld a, '1' 
+f1bb cd 0e f4			call dputc 
+f1be			xnodebu1: 
+f1be 06 03			ld b, 3			;3 seconds timeout 
+f1c0 cd c1 f4			call getct 
+f1c3 30 19			jr nc, xgethchr		;no timeout, identify character in header 
+f1c5			 
+f1c5				; Header error or timeout 
+f1c5				; purge input characters and send NAK 
+f1c5			xhdrerr: 
+f1c5 3a 27 f8			ld a, (xdebug) 
+f1c8 b7				or a 
+f1c9 28 05			jr z, xnodebue 
+f1cb 3e 65			ld a, 'e' 
+f1cd cd 0e f4			call dputc 
+f1d0			xnodebue: 
+f1d0 06 01			ld b, 1 
+f1d2 cd c1 f4			call getct 
+f1d5 30 ee			jr nc, xhdrerr		;loop until sender done 
+f1d7 3e 15			ld a, NAK 
+f1d9 cd a7 f4			call putc 
+f1dc 18 d5			jr xgethdr		;try to get header again 
+f1de			 
+f1de				; Which type of header? SOH, EOT or Ctrl-C to abort 
+f1de			xgethchr: 
+f1de fe 01			cp SOH 
+f1e0 28 0c			jr z, xgotsoh 
+f1e2 fe 03			cp CTRLC 
+f1e4 ca a7 f2			jp z, xabort 
+f1e7 fe 04			cp EOT 
+f1e9 ca 7e f2			jp z, xgoteot 
+f1ec 18 d7			jr xhdrerr 
+f1ee			 
+f1ee				; Got SOH header 
+f1ee			xgotsoh: 
+f1ee 3a 27 f8			ld a, (xdebug) 
+f1f1 b7				or a 
+f1f2 28 05			jr z, xnodebu2 
+f1f4 3e 32			ld a, '2' 
+f1f6 cd 0e f4			call dputc 
+f1f9			xnodebu2: 
+f1f9			 
+f1f9 06 01			ld b, 1 
+f1fb cd c1 f4			call getct 
+f1fe 38 c5			jr c, xhdrerr 
+f200 57				ld d, a			;sector number 
+f201 06 01			ld b, 1 
+f203 cd c1 f4			call getct 
+f206 38 bd			jr c, xhdrerr 
+f208 2f				cpl			;complement of block number 
+f209 ba				cp d 
+f20a 28 02			jr z, xgetsec		;good sector header, get sector 
+f20c 18 b7			jr xhdrerr 
+f20e			 
+f20e				; Get sector and put in temporary buffer 
+f20e			xgetsec: 
+f20e 3a 27 f8			ld a, (xdebug) 
+f211 b7				or a 
+f212 28 05			jr z, xnodebu3 
+f214 3e 33			ld a, '3' 
+f216 cd 0e f4			call dputc 
+f219			xnodebu3: 
+f219			 
+f219 7a				ld a, d			 
+f21a 32 2a f8			ld (xcsectno), a	;current sector 
+f21d 0e 00			ld c, 0			;init checksum 
+f21f 21 2c f8			ld hl, xsectbuf		;temporary buffer for uploaded data 
+f222 16 80			ld d, 128		;sector length 
+f224			xgetschar: 
+f224 06 01			ld b, 1 
+f226 cd c1 f4			call getct 
+f229 38 9a			jr c, xhdrerr 
+f22b 77				ld (hl), a		;store byte in memory 
+f22c 81				add c			;calculate checksum 
+f22d 4f				ld c, a 
+f22e 23				inc hl 
+f22f 15				dec d 
+f230 20 f2			jr nz, xgetschar 
+f232			 
+f232				; Verify the checksum 
+f232 51				ld d, c			;verify checksum 
+f233 06 01			ld b, 1 
+f235 cd c1 f4			call getct 
+f238 38 8b			jr c, xhdrerr 
+f23a ba				cp d 
+f23b 20 88			jr nz, xhdrerr 
 f23d			 
-f23d				; got new sector, write it to memory 
-f23d			xwrtsec:	 
-f23d 3a 27 f8			ld a, (xdebug) 
-f240 b7				or a 
-f241 28 05			jr z, xnodebu4 
-f243 3e 34			ld a, '4' 
-f245 cd f4 f3			call dputc 
-f248			xnodebu4: 
+f23d				; Check that this sector number is last sector + 1 
+f23d 3a 2a f8			ld a, (xcsectno) 
+f240 47				ld b, a 
+f241 3a 2b f8			ld a, (xlsectno) 
+f244 3c				inc a 
+f245 b8				cp b 
+f246 28 0d			jr z, xwrtsec		;expected sector number ok 
 f248			 
-f248 3a 2a f8			ld a, (xcsectno)	;update sector number 
-f24b 32 2b f8			ld (xlsectno), a 
-f24e ed 5b 28 f8		ld de, (memptr)		;where to put the uploaded data 
-f252 21 2c f8			ld hl, xsectbuf		;from the recieve buffer 
-f255 01 80 00			ld bc, 128 
-f258			xcpymem: 
-f258 ed b0			ldir 
-f25a ed 53 28 f8		ld (memptr), de		;update the destination in memory 
-f25e			xsndack: 
-f25e 3e 06			ld a, ACK		;send ACK 
-f260 cd 91 f4			call putc 
-f263 c3 9b f1			jp xgethdr		;get next sector 
-f266			 
-f266				; Got EOT, upload finished 
-f266			xgoteot: 
-f266 3a 27 f8			ld a, (xdebug) 
-f269 b7				or a 
-f26a 28 05			jr z, xnodebu5 
-f26c 3e 35			ld a, '5' 
-f26e cd f4 f3			call dputc 
-f271			xnodebu5: 
-f271			 
-f271 3e 06			ld a, ACK 
-f273 cd 91 f4			call putc 
-f276			 
-f276				; put ok indication in memory 
-f276 21 00 f0			ld hl, MONADR 
-f279 2b				dec hl 
-f27a 3e 4b			ld a, 'K' 
-f27c 77				ld (hl), a 
-f27d 2b				dec hl 
-f27e 3e 4f			ld a, 'O' 
-f280 77				ld (hl), a 
-f281			 
-f281				 
-f281				;write message that upload was ok 
-f281 3e 03			ld a,3			;wait a while first 
-f283 cd 0b f5			call delay 
-f286 21 b3 f2			ld hl, upcpl_msg 
-f289 cd eb f4			call print_string 
-f28c			 
-f28c c3 82 f0			jp menu 
-f28f			 
-f28f			xabort: 
-f28f 21 c5 f2			ld hl, uperr_msg	;write message that upload was interrupted 
-f292 cd eb f4			call print_string 
-f295 c3 82 f0			jp menu 
-f298			 
-f298			upload_msg: 
-f298 .. 00			db "upload file using Xmodem\r\n", 0 
-f2b3			 
-f2b3			upcpl_msg: 
-f2b3 .. 00			db "upload complete\r\n", 0 
-f2c5			 
-f2c5			uperr_msg: 
-f2c5 .. 00			db "\r\nupload interrupted\r\n", 0 
-f2dc			 
-f2dc			; Reload monitor from EPROM 
-f2dc			reload: 
-f2dc 21 e5 f2			ld hl, reload_msg 
-f2df cd eb f4			call print_string 
-f2e2 c3 00 00			jp 0x0000 
-f2e5			 
-f2e5			reload_msg: 
-f2e5 .. 00			db "reloading boot code from EPROM\r\n", 0 
-f306			 
-f306			; Execute code in RAM 
-f306			execute: 
-f306 d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
-f308 21 00 f0			ld hl, MONADR		; check if is code uploaded 
-f30b 2b				dec hl 
-f30c 7e				ld a, (hl) 
-f30d fe 4b			cp 'K' 
-f30f 20 0f			jr nz, noramprog 
-f311 2b				dec hl 
-f312 7e				ld a, (hl) 
-f313 fe 4f			cp 'O' 
-f315 20 09			jr nz, noramprog 
-f317 21 29 f3			ld hl, execute_msg 
-f31a cd eb f4			call print_string 
-f31d c3 00 00			jp 0x0000 
-f320			noramprog: 
-f320 21 55 f3		        ld hl, noramprog_msg 
-f323 cd eb f4		        call print_string 
-f326 c3 82 f0			jp menu 
-f329			 
-f329			execute_msg: 
-f329 .. 00			db "executing code from address 0x0000 in RAM\r\n", 0 
-f355			noramprog_msg: 
-f355 .. 00			db "no program code uploaded in RAM\r\n", 0 
-f377			 
-f377			; Test serial input timeout 
-f377			cttest: 
-f377 21 a4 f3			ld hl, cttest_msg 
-f37a cd eb f4			call print_string 
-f37d			 
-f37d			;calibrating the timeout 
-f37d 0e 30			ld c, '0' 
-f37f			tstloop: 
-f37f 79				ld a, c 
-f380 cd 91 f4			call putc 
-f383 3e 2e			ld a, '.' 
-f385 cd 91 f4			call putc 
-f388 06 0a			ld b,10		;10 seconds timeout 
-f38a cd ab f4			call getct 
-f38d d2 82 f0			jp nc, menu 
-f390 0c				inc c 
-f391 79				ld a, c 
-f392 fe 3a			cp '9' + 1 
-f394 20 e9			jr nz, tstloop 
-f396 0e 30			ld c, '0' 
-f398 3e 0d			ld a, '\r' 
-f39a cd 91 f4			call putc 
-f39d 3e 0a			ld a, '\n' 
-f39f cd 91 f4			call putc 
-f3a2 18 db			jr tstloop 
-f3a4			 
-f3a4			cttest_msg: 
-f3a4 ..				db "testing serial input timeout, 10 sec between dots\r\n" 
-f3d7 .. 00			db "press any key to stop test\r\n", 0 
-f3f4			 
-f3f4			; Debug print character in reg A on channel B 
-f3f4			dputc: 
-f3f4 cd 66 f4			call sel_b_sio 
-f3f7 cd 91 f4			call putc 
-f3fa cd 59 f4			call sel_a_sio 
-f3fd c9				ret 
-f3fe			 
-f3fe			; Routines to initialize and use i/o devices 
-f3fe			; 
-f3fe			; pio_init: initialize PIO channel A and B for output (Mode 0) 
-f3fe			; affects: A 
-f3fe			pio_init: 
-f3fe				;PIO A 
-f3fe 3e 0f			ld a, 00001111b		; mode 0 
-f400 d3 12			out (PIO_A_CTRL), a 
-f402 3e 07			ld a, 00000111b		; int disable 
-f404 d3 12			out (PIO_A_CTRL), a 
-f406				;PIO B, SPI interface 
-f406 3e cf			ld a, 11001111b		; mode 3 
-f408 d3 13			out (PIO_B_CTRL), a 
-f40a 3e f1			ld a, 11110001b		; i/o mask 
-f40c				; bit 0: MISO - input 
-f40c				; bit 1: MOSI - output 
-f40c				; bit 2: SCK  - output 
-f40c				; bit 3: /CS  - output 
-f40c				; bit 4 - 7:  - inputs but not used (yet) 
-f40c d3 13			out (PIO_B_CTRL), a 
-f40e 3e 07			ld a, 00000111b		; int disable 
-f410 d3 13			out (PIO_B_CTRL), a 
-f412 3e 08			ld a, 00001000b		;initialize output bits 
-f414				; bit 1: MOSI - output	;low 
-f414				; bit 2: SCK  - output	;low 
-f414				; bit 3: /CS  - output	;high = not selected 
-f414 d3 11			out (PIO_B_DATA), a 
-f416 c9				ret 
-f417			 
-f417			; Divide constant in CTC to get an approximate baudrate of 9600 
-f417			; To get 9600 baud with a 4MHz xtal oscillator the divide constant 
-f417			; should be 4000000/(9600*2*16) = 13.0208 
-f417			; Using the CTC divider constant set to 13 will give a baud-rate 
-f417			; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough. 
-f417			; This is tested and works with a 9600 baudrate connection to a Linux PC. 
-f417			; 
-f417			; (If this is not exact enough, another xtal oscillator must be selected, 
-f417			; it should have the frequency: 3.6864 MHz 
-f417			; The divide constant will then be set to 12 which gives the baudrate 
-f417			; of 3686400/(2*16*12) = 9600 baud.) 
-f417			BAUDDIV:	equ 13 
-f417			 
-f417			; ctc_init: initializes the CTC channel 0 for baudrate clock to SIO/0 
-f417			; initializes also CTC channels 1, 2 and 3 
-f417			; input TRG0-2 is supplied by the BCLK signal which is the system clock 
-f417			; divided by 2 by the ATF22V10C  
-f417			; affects: A 
-f417			ctc_init: 
-f417				; CTC chan 0 
-f417 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
-f419							; falling edge, time trigger don't care, 
-f419							; time constant follows, sw reset,  
-f419							; this is a ctrl cmd 
-f419 d3 0c			out (CTC_CH0), a 
-f41b 3e 0d			ld a, BAUDDIV		; divide constant to get baudrate 
-f41d d3 0c			out (CTC_CH0), a 
-f41f			        ; Interupt vector is written to chan 0 
-f41f 3e 10		        ld a, ctciv & 0xf8      ; interupt vector for device 
-f421 d3 0c		        out (CTC_CH0), a 
-f423			 
-f423				; CTC chan 1 
-f423 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
-f425							; falling edge, time trigger don't care, 
-f425							; time constant follows, sw reset,  
-f425							; this is a ctrl cmd 
-f425 d3 0d			out (CTC_CH1), a 
-f427 3e 0a			ld a, 10		; divide BCLK by 10 
-f429 d3 0d			out (CTC_CH1), a 
-f42b			 
-f42b				; CTC chan 2 
-f42b 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
-f42d							; falling edge, time trigger don't care, 
-f42d							; time constant follows, sw reset,  
-f42d							; this is a ctrl cmd 
-f42d d3 0e			out (CTC_CH2), a 
-f42f 3e 64			ld a, 100		; divide BCLK by 100 
-f431 d3 0e			out (CTC_CH2), a 
-f433			 
-f433			        ; CTC chan 3 setup 
-f433 3e b7		        ld a, 10110111b         ; int enabled, timer mode, prescaler 256, 
-f435			                                ; rising edge, automatic time trigger, 
-f435			                                ; time constant follows, sw reset, 
-f435			                                ; this is a ctrl cmd 
-f435 d3 0f		        out (CTC_CH3), a 
-f437 3e 9c		        ld a, 156                ; divide CLK/(256 * 156) = ~100Hz 
-f439 d3 0f		        out (CTC_CH3), a 
-f43b			 
-f43b c9				ret 
-f43c			 
-f43c			; sio_init: initializes the SIO/0 for serial communication 
-f43c			; affects: HL, B, C 
-f43c			sio_init: 
-f43c				; load B with number of bytes 
-f43c 06 0a			ld b, sio_init_data_end - sio_init_data 
-f43e 21 4f f4			ld hl, sio_init_data	; HL points to start of data 
-f441 0e 0a			ld c, SIO_A_CTRL	; I/O-port A for write 
-f443 ed b3			otir			; block write of B bytes to [C] starting from HL 
+f248				; sender missed last ACK 
+f248 3a 27 f8			ld a, (xdebug) 
+f24b b7				or a 
+f24c 28 05			jr z, xnodebum 
+f24e 3e 6d			ld a, 'm' 
+f250 cd 0e f4			call dputc 
+f253			xnodebum: 
+f253 18 21			jr xsndack 
+f255			 
+f255				; got new sector, write it to memory 
+f255			xwrtsec:	 
+f255 3a 27 f8			ld a, (xdebug) 
+f258 b7				or a 
+f259 28 05			jr z, xnodebu4 
+f25b 3e 34			ld a, '4' 
+f25d cd 0e f4			call dputc 
+f260			xnodebu4: 
+f260			 
+f260 3a 2a f8			ld a, (xcsectno)	;update sector number 
+f263 32 2b f8			ld (xlsectno), a 
+f266 ed 5b 28 f8		ld de, (memptr)		;where to put the uploaded data 
+f26a 21 2c f8			ld hl, xsectbuf		;from the recieve buffer 
+f26d 01 80 00			ld bc, 128 
+f270			xcpymem: 
+f270 ed b0			ldir 
+f272 ed 53 28 f8		ld (memptr), de		;update the destination in memory 
+f276			xsndack: 
+f276 3e 06			ld a, ACK		;send ACK 
+f278 cd a7 f4			call putc 
+f27b c3 b3 f1			jp xgethdr		;get next sector 
+f27e			 
+f27e				; Got EOT, upload finished 
+f27e			xgoteot: 
+f27e 3a 27 f8			ld a, (xdebug) 
+f281 b7				or a 
+f282 28 05			jr z, xnodebu5 
+f284 3e 35			ld a, '5' 
+f286 cd 0e f4			call dputc 
+f289			xnodebu5: 
+f289			 
+f289 3e 06			ld a, ACK 
+f28b cd a7 f4			call putc 
+f28e			 
+f28e				; put ok indication in memory 
+f28e 21 00 f0			ld hl, MONADR 
+f291 2b				dec hl 
+f292 3e 4b			ld a, 'K' 
+f294 77				ld (hl), a 
+f295 2b				dec hl 
+f296 3e 4f			ld a, 'O' 
+f298 77				ld (hl), a 
+f299				 
+f299				;write message that upload was ok 
+f299 3e 03			ld a,3			;wait a while first 
+f29b cd 21 f5			call delay 
+f29e 21 cb f2			ld hl, upcpl_msg 
+f2a1 cd 01 f5			call print_string 
+f2a4			 
+f2a4 c3 86 f0			jp menu 
+f2a7			 
+f2a7			xabort: 
+f2a7 21 dd f2			ld hl, uperr_msg	;write message that upload was interrupted 
+f2aa cd 01 f5			call print_string 
+f2ad c3 86 f0			jp menu 
+f2b0			 
+f2b0			upload_msg: 
+f2b0 .. 00			db "upload file using Xmodem\r\n", 0 
+f2cb			 
+f2cb			upcpl_msg: 
+f2cb .. 00			db "upload complete\r\n", 0 
+f2dd			 
+f2dd			uperr_msg: 
+f2dd .. 00			db "\r\nupload interrupted\r\n", 0 
+f2f4			 
+f2f4			; Reload monitor from EPROM 
+f2f4			reload: 
+f2f4 21 ff f2			ld hl, reload_msg 
+f2f7 cd 01 f5			call print_string 
+f2fa d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range 
+f2fc c3 00 00			jp 0x0000 
+f2ff			 
+f2ff			reload_msg: 
+f2ff .. 00			db "reloading boot code from EPROM\r\n", 0 
+f320			 
+f320			; Execute code in RAM 
+f320			execute: 
+f320 d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
+f322 21 00 f0			ld hl, MONADR		; check if is code uploaded 
+f325 2b				dec hl 
+f326 7e				ld a, (hl) 
+f327 fe 4b			cp 'K' 
+f329 20 0f			jr nz, noramprog 
+f32b 2b				dec hl 
+f32c 7e				ld a, (hl) 
+f32d fe 4f			cp 'O' 
+f32f 20 09			jr nz, noramprog 
+f331 21 43 f3			ld hl, execute_msg 
+f334 cd 01 f5			call print_string 
+f337 c3 00 00			jp 0x0000 
+f33a			noramprog: 
+f33a 21 6f f3		        ld hl, noramprog_msg 
+f33d cd 01 f5		        call print_string 
+f340 c3 86 f0			jp menu 
+f343			 
+f343			execute_msg: 
+f343 .. 00			db "executing code from address 0x0000 in RAM\r\n", 0 
+f36f			noramprog_msg: 
+f36f .. 00			db "no program code uploaded in RAM\r\n", 0 
+f391			 
+f391			; Test serial input timeout 
+f391			cttest: 
+f391 21 be f3			ld hl, cttest_msg 
+f394 cd 01 f5			call print_string 
+f397			 
+f397			;calibrating the timeout 
+f397 0e 30			ld c, '0' 
+f399			tstloop: 
+f399 79				ld a, c 
+f39a cd a7 f4			call putc 
+f39d 3e 2e			ld a, '.' 
+f39f cd a7 f4			call putc 
+f3a2 06 0a			ld b,10		;10 seconds timeout 
+f3a4 cd c1 f4			call getct 
+f3a7 d2 86 f0			jp nc, menu 
+f3aa 0c				inc c 
+f3ab 79				ld a, c 
+f3ac fe 3a			cp '9' + 1 
+f3ae 20 e9			jr nz, tstloop 
+f3b0 0e 30			ld c, '0' 
+f3b2 3e 0d			ld a, '\r' 
+f3b4 cd a7 f4			call putc 
+f3b7 3e 0a			ld a, '\n' 
+f3b9 cd a7 f4			call putc 
+f3bc 18 db			jr tstloop 
+f3be			 
+f3be			cttest_msg: 
+f3be ..				db "testing serial input timeout, 10 sec between dots\r\n" 
+f3f1 .. 00			db "press any key to stop test\r\n", 0 
+f40e			 
+f40e			; Debug print character in reg A on channel B 
+f40e			dputc: 
+f40e cd 7c f4			call sel_b_sio 
+f411 cd a7 f4			call putc 
+f414 cd 6f f4			call sel_a_sio 
+f417 c9				ret 
+f418			 
+f418			; Routines to initialize and use i/o devices 
+f418			; 
+f418			; pio_init: initialize PIO channel A and B for output (Mode 0) 
+f418			; affects: A 
+f418			pio_init: 
+f418				;PIO A 
+f418 3e 0f			ld a, 00001111b		; mode 0 
+f41a d3 12			out (PIO_A_CTRL), a 
+f41c 3e 07			ld a, 00000111b		; int disable 
+f41e d3 12			out (PIO_A_CTRL), a 
+f420				;PIO B, SPI interface 
+f420 3e cf			ld a, 11001111b		; mode 3 
+f422 d3 13			out (PIO_B_CTRL), a 
+f424 3e 01			ld a, 00000001b		; i/o mask 
+f426				;bit 0: MISO - input     3                   3 
+f426				;bit 1: MOSI - output    4                   5 
+f426				;bit 2: SCK  - output    5                   7 
+f426				;bit 3: /CS0 - output    6                   9 
+f426				;bit 4: /CS1 - output  extra device select  11 
+f426				;bit 5: /CS2 - output  extra device select  10 
+f426				;bit 6: TP1  - output  test point            8  (used to measure NMI handling time) 
+f426				;bit 7: TRA  - output  byte in transfer      6   signals that NMI routine is active 
+f426				;                                                with an 8 bit transmit or receive transfer 
+f426 d3 13			out (PIO_B_CTRL), a 
+f428 3e 07			ld a, 00000111b		; int disable 
+f42a d3 13			out (PIO_B_CTRL), a 
+f42c 3e 3a			ld a, 00111010b		;initialize output bits 
+f42e				; bit 1: MOSI - output	;low 
+f42e				; bit 2: SCK  - output	;low 
+f42e				; bit 3: /CS0 - output	;high = not selected 
+f42e				; bit 4: /CS1 - output	;high = not selected 
+f42e				; bit 5: /CS2 - output	;high = not selected 
+f42e				; bit 6: TP1  - output  ;low 
+f42e				; bit 7: TRA  - output  ;low 
+f42e d3 11			out (PIO_B_DATA), a 
+f430 c9				ret 
+f431			 
+f431			; Divide constant in CTC to get an approximate baudrate of 9600 
+f431			; To get 9600 baud with a 4MHz xtal oscillator the divide constant 
+f431			; should be 4000000/(9600*2*16) = 13.0208 
+f431			; Using the CTC divider constant set to 13 will give a baud-rate 
+f431			; of 4000000/(2*16*13) = 9615 baud which hopefully is close enough. 
+f431			; This is tested and works with a 9600 baudrate connection to a Linux PC. 
+f431			; 
+f431			; (If this is not exact enough, another xtal oscillator must be selected, 
+f431			; it should have the frequency: 3.6864 MHz 
+f431			; The divide constant will then be set to 12 which gives the baudrate 
+f431			; of 3686400/(2*16*12) = 9600 baud.) 
+f431			BAUDDIV:	equ 13 
+f431			 
+f431			; ctc_init: initializes the CTC channel 0 for baudrate clock to SIO/0 
+f431			; initializes also CTC channels 1, 2 and 3 
+f431			; input TRG0-2 is supplied by the BCLK signal which is the system clock 
+f431			; divided by 2 by the ATF22V10C  
+f431			; affects: A 
+f431			ctc_init: 
+f431				; CTC chan 0 
+f431 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
+f433							; falling edge, time trigger don't care, 
+f433							; time constant follows, sw reset,  
+f433							; this is a ctrl cmd 
+f433 d3 0c			out (CTC_CH0), a 
+f435 3e 0d			ld a, BAUDDIV		; divide constant to get baudrate 
+f437 d3 0c			out (CTC_CH0), a 
+f439			        ; Interupt vector is written to chan 0 
+f439 3e 10		        ld a, ctciv & 0xf8      ; interupt vector for device 
+f43b d3 0c		        out (CTC_CH0), a 
+f43d			 
+f43d				; CTC chan 1 
+f43d 3e 47			ld a, 01000111b		; int off, counter mode, prescaler don't care, 
+f43f							; falling edge, time trigger don't care, 
+f43f							; time constant follows, sw reset,  
+f43f							; this is a ctrl cmd 
+f43f d3 0d			out (CTC_CH1), a 
+f441 3e 0a			ld a, 10		; divide BCLK by 10 
+f443 d3 0d			out (CTC_CH1), a 
 f445			 
-f445				; load B with number of bytes 
-f445 06 0a			ld b, sio_init_data_end - sio_init_data 
-f447 21 4f f4			ld hl, sio_init_data	; HL points to start of data 
-f44a 0e 0b			ld c, SIO_B_CTRL	; I/O-port B for write 
-f44c ed b3			otir			; block write of B bytes to [C] starting from HL 
-f44e			 
-f44e c9				ret 
-f44f			 
-f44f			sio_init_data: 
-f44f 30				db 00110000b		; write to WR0: error reset 
-f450 18				db 00011000b		; write to WR0: channel reset 
-f451 04 44			db 0x04, 01000100b	; write to WR4: clkx16, 1 stop bit, no parity 
-f453 05 68			db 0x05, 01101000b	; write to WR5: DTR inactive, enable TX 8bit, 
-f455							; BREAK off, TX on, RTS inactive 
-f455 01 00			db 0x01, 00000000b	; write to WR1: no interrupts enabled 
-f457 03 c1			db 0x03, 11000001b	; write to WR3: enable RX 8bit 
-f459			sio_init_data_end: 
-f459			 
-f459			; sel_a_sio: selects SIO channel A for i/o 
-f459			; affects: none 
-f459			sel_a_sio: 
-f459 f5				push af 
-f45a 3e 08			ld a, SIO_A_DATA 
-f45c 32 1d f8			ld (sio_data), a 
-f45f 3e 0a			ld a, SIO_A_CTRL 
-f461 32 1c f8			ld (sio_ctrl), a 
-f464 f1				pop af 
-f465 c9				ret 
-f466			 
-f466			; sel_b_sio: selects SIO channel B for i/o 
-f466			; affects: none 
-f466			sel_b_sio: 
-f466 f5				push af 
-f467 3e 09			ld a, SIO_B_DATA 
-f469 32 1d f8			ld (sio_data), a 
-f46c 3e 0b			ld a, SIO_B_CTRL 
-f46e 32 1c f8			ld (sio_ctrl), a 
-f471 f1				pop af 
-f472 c9				ret 
-f473			 
-f473			; tx_ready: waits for transmitt buffer to become empty 
-f473			; affects: none 
-f473			sio_tx_ready: 
-f473 f5				push af 
-f474 c5				push bc 
-f475			sio_tx_ready_loop: 
-f475 3a 1c f8			ld a, (sio_ctrl) 
-f478 4f				ld c, a 
-f479 ed 78			in a, (c)		; read RR0 
-f47b cb 57			bit 2, a		; check if bit 2 is set 
-f47d 28 f6			jr z, sio_tx_ready_loop	; if no - check again 
-f47f c1				pop bc 
-f480 f1				pop af 
-f481 c9				ret 
-f482			 
-f482			; rx_ready: waits for a character to become available 
-f482			; affects: none 
-f482			sio_rx_ready: 
-f482 f5				push af 
-f483 c5				push bc 
-f484			sio_rx_ready_loop:	 
-f484 3a 1c f8			ld a, (sio_ctrl) 
-f487 4f				ld c, a 
-f488 ed 78			in a, (c)		; read RR0 
-f48a cb 47			bit 0, a		; check if bit 0 is set 
-f48c 28 f6			jr z, sio_rx_ready_loop	; if no - rx buffer has no data => check again 
-f48e c1				pop bc 
-f48f f1				pop af 
-f490 c9				ret 
-f491			 
-f491			; sends byte in reg A	 
-f491			; affects: none 
-f491			putc: 
-f491 c5				push bc 
-f492 f5				push af 
-f493 cd 73 f4			call sio_tx_ready 
-f496 3a 1d f8			ld a, (sio_data) 
-f499 4f				ld c, a 
-f49a f1				pop af 
-f49b ed 79			out (c), a		; write character 
-f49d c1				pop bc 
-f49e c9				ret 
-f49f			 
-f49f			; getc: waits for a byte to be available and reads it 
-f49f			; returns: A - read byte 
-f49f			getc: 
-f49f c5				push bc 
-f4a0 cd 82 f4			call sio_rx_ready	; wait until there is a character 
-f4a3 3a 1d f8			ld a, (sio_data) 
-f4a6 4f				ld c, a 
-f4a7 ed 78			in a, (c)		; read character 
-f4a9 c1				pop bc 
-f4aa c9				ret 
-f4ab			 
-f4ab			; getct: waits for a byte to be available with timeout and reads it 
-f4ab			; reg B - timeout in seconds 
-f4ab			; returns: 
-f4ab			;   Carry = 1: timeout, Carry = 0: no timeout 
-f4ab			;   reg A - read byte 
-f4ab			getct: 
-f4ab c5				push bc 
-f4ac d5				push de 
-f4ad 11 28 23			ld de, GETCTM 
-f4b0			getcloop: 
-f4b0 3a 1c f8			ld a, (sio_ctrl) 
-f4b3 4f				ld c, a 
-f4b4 ed 78			in a, (c)		; read RR0 
-f4b6 cb 47			bit 0, a		; check if bit 0 is set 
-f4b8 20 09			jr nz, getchrin		; character available 
-f4ba 1b				dec de 
-f4bb 7a				ld a, d 
-f4bc b3				or e 
-f4bd 20 f1			jr nz, getcloop		; inner loop 
-f4bf 10 ef			djnz getcloop		; outer loop, number of seconds 
-f4c1 18 0b			jr getcnochr		; timeout 
-f4c3			getchrin: 
-f4c3 3a 1d f8			ld a, (sio_data) 
-f4c6 4f				ld c, a 
-f4c7 ed 78			in a, (c)		; read character 
-f4c9 d1				pop de 
-f4ca c1				pop bc 
-f4cb 37				scf 
-f4cc 3f				ccf			; Carry = 0, no timeout 
-f4cd c9				ret 
-f4ce			getcnochr: 
-f4ce 3e 00			ld a, 0 
-f4d0 d1				pop de 
-f4d1 c1				pop bc 
-f4d2 37				scf			; Carry = 1, timeout 
-f4d3 c9				ret 
-f4d4			 
-f4d4			; getkey: gets a byte if available and reads it 
-f4d4			; returns: A - read byte or 0 if no byte available 
-f4d4			getkey: 
-f4d4 c5				push bc 
-f4d5 3a 1c f8			ld a, (sio_ctrl) 
-f4d8 4f				ld c, a 
-f4d9 ed 78			in a, (c)		; read RR0 
-f4db cb 47			bit 0, a		; check if bit 0 is set 
-f4dd 28 08			jr z, no_key		; if no - rx buffer has no data => return 0 
-f4df 3a 1d f8			ld a, (sio_data) 
-f4e2 4f				ld c, a 
-f4e3 ed 78			in a, (c)		; read character 
-f4e5 c1				pop bc 
-f4e6 c9				ret 
-f4e7			no_key: 
-f4e7 3e 00			ld a, 0 
-f4e9 c1				pop bc 
-f4ea c9				ret 
-f4eb			 
-f4eb			; print_string: prints a string which starts at adress HL 
-f4eb			; and is terminated by EOS-character 
-f4eb			; affects: none 
-f4eb			print_string: 
-f4eb f5				push af 
-f4ec e5				push hl 
-f4ed			print_string_1: 
-f4ed 7e				ld a,(hl)		; load next character 
-f4ee fe 00			cp 0			; is it en End Of String - character? 
-f4f0 28 06			jr z, print_string_2	; yes - return 
-f4f2 cd 91 f4			call putc		; no - print character 
-f4f5 23				inc hl			; HL++ 
-f4f6 18 f5			jr print_string_1	; do it again 
-f4f8			print_string_2: 
-f4f8 e1				pop hl 
-f4f9 f1				pop af 
-f4fa c9				ret 
-f4fb			 
-f4fb			; blink: the blink routine blinks the MEMSEL LED 
-f4fb			; the number of times to blink in register A 
-f4fb			; Must run in upper 32KB memory 
-f4fb			 
-f4fb			; Blink LED a number of times 
-f4fb			; using: A 
-f4fb			blink: 
-f4fb 32 22 f8			ld (ledblinks),a 
-f4fe			blinkloop: 
-f4fe cd 1e f5			call blinkled 
-f501 3a 22 f8			ld a,(ledblinks) 
-f504 3d				dec a 
-f505 32 22 f8			ld (ledblinks),a 
-f508 c8				ret z 
-f509 18 f3			jr blinkloop 
-f50b			 
-f50b			; Make delay wait a number of times 
-f50b			; using: A 
-f50b			delay: 
-f50b 32 23 f8			ld (delays),a 
-f50e			delayloop: 
-f50e cd 31 f5			call bdelay 
-f511 cd 31 f5			call bdelay 
-f514 3a 23 f8			ld a,(delays) 
-f517 3d				dec a 
-f518 32 23 f8			ld (delays),a 
-f51b c8				ret z 
-f51c 18 f0			jr delayloop 
-f51e			 
-f51e			; Blink LED once 
-f51e			blinkled: 
-f51e d3 18			out (LEDON), a	; Green LED on 
-f520 cd 31 f5			call bdelay 
-f523 cd 31 f5			call bdelay 
-f526 3e 00			ld a,0 
-f528 d3 14			out (LEDOFF),a	; Green LED off 
-f52a cd 31 f5			call bdelay 
-f52d cd 31 f5			call bdelay 
-f530 c9				ret 
-f531			 
-f531			; Suitable delay for blinking LED and waiting 
-f531			bdelay: 
-f531 e5				push hl 
-f532 21 40 1f			ld hl,8000	; number of loops to delay between blinks 
-f535 22 20 f8			ld (loopcnt),hl 
-f538			bdelayloop: 
-f538 2a 20 f8			ld hl,(loopcnt) 
-f53b 2b				dec hl 
-f53c 7c				ld a,h 
-f53d b5				or l 
-f53e ca 47 f5			jp z,bleaveloop 
-f541 22 20 f8			ld (loopcnt),hl 
-f544 c3 38 f5			jp bdelayloop 
-f547			bleaveloop: 
-f547 e1				pop hl 
-f548 c9				ret 
-f549			 
-f549			; The test program 
-f549			testprog: 
-f549 3e 11			ld a, 00010001b	; bit pattern to output on PIO A 
-f54b 32 1e f8			ld (pio_out),a  
-f54e			 
-f54e			; Initialize interupt mode 2 and enable interupt 
-f54e ed 5e		        im 2 
-f550 3e f8		        ld a, ivblock / 256 
-f552 ed 47		        ld i, a 
-f554 fb			        ei 
-f555			 
-f555			; This test loop goes on "forever" 
-f555			testloop: 
-f555 3e 00		        ld a, 0         ; reset interrupt indicator 
-f557 32 26 f8		        ld (gotint), a 
-f55a			 
-f55a			; test SIO channel A 
-f55a cd 59 f4			call sel_a_sio 
-f55d 21 08 f0			ld hl, ver_msg 
-f560 cd eb f4			call print_string 
-f563 21 7a f6			ld hl, tstop_msg 
-f566 cd eb f4			call print_string 
-f569 21 95 f6			ld hl, a_msg 
-f56c cd eb f4			call print_string 
-f56f 3e 00			ld a, 0 
-f571 32 1f f8			ld (keyin), a 
-f574			nxt_a_key: 
-f574 cd d4 f4			call getkey	; test if any input character available 
-f577 fe 03			cp CTRLC	; end the test 
-f579 ca 82 f0			jp z,menu 
-f57c b7				or a 
-f57d ca 8b f5			jp z, no_more_a_keys 
-f580 cd 91 f4			call putc 
-f583 3e 01			ld a, 1 
-f585 32 1f f8			ld (keyin), a 
-f588 c3 74 f5			jp nxt_a_key 
-f58b			no_more_a_keys: 
-f58b 3a 1f f8			ld a, (keyin) 
-f58e b7				or a 
-f58f ca 98 f5			jp z, no_a_key 
-f592 21 af f6			ld hl, a_in_msg 
-f595 cd eb f4			call print_string 
-f598			no_a_key: 
-f598 3e 05			ld a,5		; five LED blinks after sending on SIO A 
-f59a cd fb f4			call blink 
-f59d 3e 05			ld a,5 
-f59f cd 0b f5			call delay 
-f5a2			 
-f5a2			; test SIO channel B 
-f5a2 cd 66 f4			call sel_b_sio 
-f5a5 21 08 f0			ld hl, ver_msg 
-f5a8 cd eb f4			call print_string 
-f5ab 21 cc f6			ld hl, b_msg 
-f5ae cd eb f4			call print_string 
-f5b1 3e 00			ld a, 0 
-f5b3 32 1f f8			ld (keyin), a 
-f5b6			nxt_b_key: 
-f5b6 cd d4 f4			call getkey	; test if any input character available 
-f5b9 b7				or a 
-f5ba ca c8 f5			jp z, no_more_b_keys 
-f5bd cd 91 f4			call putc 
-f5c0 3e 01			ld a, 1 
-f5c2 32 1f f8			ld (keyin), a 
-f5c5 c3 b6 f5			jp nxt_b_key 
-f5c8			no_more_b_keys: 
-f5c8 3a 1f f8			ld a, (keyin) 
-f5cb b7				or a 
-f5cc ca d5 f5			jp z, no_b_key 
-f5cf 21 e6 f6			ld hl, b_in_msg 
-f5d2 cd eb f4			call print_string 
-f5d5			no_b_key: 
-f5d5 3e 06			ld a, 6			; six LED blinks after sending on SIO B 
-f5d7 cd fb f4			call blink 
-f5da 3e 02			ld a, 2 
-f5dc cd 0b f5			call delay 
-f5df			 
-f5df			; Test RAM 
-f5df 21 03 f7			ld hl, ram_tst_start 
-f5e2 cd 59 f4			call sel_a_sio 
-f5e5 cd eb f4			call print_string 
-f5e8 cd 66 f4			call sel_b_sio 
-f5eb cd eb f4			call print_string 
-f5ee cd 3d f6			call test_ram 
-f5f1 21 18 f7			ld hl, ram_tst_ok 
-f5f4 3a 24 f8			ld a,(ramerr)		; was there an error? 
-f5f7 b7				or a 
-f5f8 ca fe f5			jp z, ram_prt	; no error 
-f5fb 21 30 f7			ld hl, ram_tst_err 
-f5fe			ram_prt: 
-f5fe cd 59 f4			call sel_a_sio 
-f601 cd eb f4			call print_string 
-f604 cd 66 f4			call sel_b_sio 
-f607 cd eb f4			call print_string 
-f60a 3e 07			ld a, 7			; seven LED blinks after testing RAM 
-f60c cd fb f4			call blink 
-f60f 3e 02			ld a, 2 
-f611 cd 0b f5			call delay 
-f614			 
-f614			; Test if interupt recieved on SIO A 
-f614 cd 59 f4		        call sel_a_sio 
-f617 21 6a f7		        ld hl, no_int_msg 
-f61a 3a 26 f8		        ld a, (gotint)  ; Interupt recieved? 
-f61d b7			        or a 
-f61e ca 24 f6		        jp z, prtinta    ; no 
-f621 21 4b f7		        ld hl, int_msg 
-f624			prtinta: 
-f624 cd eb f4		        call print_string 
-f627			 
-f627			; Test if interupt recieved 
-f627 cd 66 f4		        call sel_b_sio 
-f62a 21 6a f7		        ld hl, no_int_msg 
-f62d 3a 26 f8		        ld a, (gotint)  ; Interupt recieved? 
-f630 b7			        or a 
-f631 ca 37 f6		        jp z, prtintb    ; no 
-f634 21 4b f7		        ld hl, int_msg 
-f637			prtintb: 
-f637 cd eb f4		        call print_string 
-f63a			 
-f63a c3 55 f5			jp testloop 
+f445				; CTC chan 2 
+f445 3e 03			ld a, 00000011b		; sw reset, this is a ctrl cmd 
+f447 d3 0e			out (CTC_CH2), a 
+f449			 
+f449			        ; CTC chan 3 setup 
+f449 3e b7		        ld a, 10110111b         ; int enabled, timer mode, prescaler 256, 
+f44b			                                ; rising edge, automatic time trigger, 
+f44b			                                ; time constant follows, sw reset, 
+f44b			                                ; this is a ctrl cmd 
+f44b d3 0f		        out (CTC_CH3), a 
+f44d 3e 9c		        ld a, 156                ; divide CLK/(256 * 156) = ~100Hz 
+f44f d3 0f		        out (CTC_CH3), a 
+f451			 
+f451 c9				ret 
+f452			 
+f452			; sio_init: initializes the SIO/0 for serial communication 
+f452			; affects: HL, B, C 
+f452			sio_init: 
+f452				; load B with number of bytes 
+f452 06 0a			ld b, sio_init_data_end - sio_init_data 
+f454 21 65 f4			ld hl, sio_init_data	; HL points to start of data 
+f457 0e 0a			ld c, SIO_A_CTRL	; I/O-port A for write 
+f459 ed b3			otir			; block write of B bytes to [C] starting from HL 
+f45b			 
+f45b				; load B with number of bytes 
+f45b 06 0a			ld b, sio_init_data_end - sio_init_data 
+f45d 21 65 f4			ld hl, sio_init_data	; HL points to start of data 
+f460 0e 0b			ld c, SIO_B_CTRL	; I/O-port B for write 
+f462 ed b3			otir			; block write of B bytes to [C] starting from HL 
+f464			 
+f464 c9				ret 
+f465			 
+f465			sio_init_data: 
+f465 30				db 00110000b		; write to WR0: error reset 
+f466 18				db 00011000b		; write to WR0: channel reset 
+f467 04 44			db 0x04, 01000100b	; write to WR4: clkx16, 1 stop bit, no parity 
+f469 05 68			db 0x05, 01101000b	; write to WR5: DTR inactive, enable TX 8bit, 
+f46b							; BREAK off, TX on, RTS inactive 
+f46b 01 00			db 0x01, 00000000b	; write to WR1: no interrupts enabled 
+f46d 03 c1			db 0x03, 11000001b	; write to WR3: enable RX 8bit 
+f46f			sio_init_data_end: 
+f46f			 
+f46f			; sel_a_sio: selects SIO channel A for i/o 
+f46f			; affects: none 
+f46f			sel_a_sio: 
+f46f f5				push af 
+f470 3e 08			ld a, SIO_A_DATA 
+f472 32 1d f8			ld (sio_data), a 
+f475 3e 0a			ld a, SIO_A_CTRL 
+f477 32 1c f8			ld (sio_ctrl), a 
+f47a f1				pop af 
+f47b c9				ret 
+f47c			 
+f47c			; sel_b_sio: selects SIO channel B for i/o 
+f47c			; affects: none 
+f47c			sel_b_sio: 
+f47c f5				push af 
+f47d 3e 09			ld a, SIO_B_DATA 
+f47f 32 1d f8			ld (sio_data), a 
+f482 3e 0b			ld a, SIO_B_CTRL 
+f484 32 1c f8			ld (sio_ctrl), a 
+f487 f1				pop af 
+f488 c9				ret 
+f489			 
+f489			; tx_ready: waits for transmitt buffer to become empty 
+f489			; affects: none 
+f489			sio_tx_ready: 
+f489 f5				push af 
+f48a c5				push bc 
+f48b			sio_tx_ready_loop: 
+f48b 3a 1c f8			ld a, (sio_ctrl) 
+f48e 4f				ld c, a 
+f48f ed 78			in a, (c)		; read RR0 
+f491 cb 57			bit 2, a		; check if bit 2 is set 
+f493 28 f6			jr z, sio_tx_ready_loop	; if no - check again 
+f495 c1				pop bc 
+f496 f1				pop af 
+f497 c9				ret 
+f498			 
+f498			; rx_ready: waits for a character to become available 
+f498			; affects: none 
+f498			sio_rx_ready: 
+f498 f5				push af 
+f499 c5				push bc 
+f49a			sio_rx_ready_loop:	 
+f49a 3a 1c f8			ld a, (sio_ctrl) 
+f49d 4f				ld c, a 
+f49e ed 78			in a, (c)		; read RR0 
+f4a0 cb 47			bit 0, a		; check if bit 0 is set 
+f4a2 28 f6			jr z, sio_rx_ready_loop	; if no - rx buffer has no data => check again 
+f4a4 c1				pop bc 
+f4a5 f1				pop af 
+f4a6 c9				ret 
+f4a7			 
+f4a7			; sends byte in reg A	 
+f4a7			; affects: none 
+f4a7			putc: 
+f4a7 c5				push bc 
+f4a8 f5				push af 
+f4a9 cd 89 f4			call sio_tx_ready 
+f4ac 3a 1d f8			ld a, (sio_data) 
+f4af 4f				ld c, a 
+f4b0 f1				pop af 
+f4b1 ed 79			out (c), a		; write character 
+f4b3 c1				pop bc 
+f4b4 c9				ret 
+f4b5			 
+f4b5			; getc: waits for a byte to be available and reads it 
+f4b5			; returns: A - read byte 
+f4b5			getc: 
+f4b5 c5				push bc 
+f4b6 cd 98 f4			call sio_rx_ready	; wait until there is a character 
+f4b9 3a 1d f8			ld a, (sio_data) 
+f4bc 4f				ld c, a 
+f4bd ed 78			in a, (c)		; read character 
+f4bf c1				pop bc 
+f4c0 c9				ret 
+f4c1			 
+f4c1			; getct: waits for a byte to be available with timeout and reads it 
+f4c1			; reg B - timeout in seconds 
+f4c1			; returns: 
+f4c1			;   Carry = 1: timeout, Carry = 0: no timeout 
+f4c1			;   reg A - read byte 
+f4c1			getct: 
+f4c1 c5				push bc 
+f4c2 d5				push de 
+f4c3 11 28 23			ld de, GETCTM 
+f4c6			getcloop: 
+f4c6 3a 1c f8			ld a, (sio_ctrl) 
+f4c9 4f				ld c, a 
+f4ca ed 78			in a, (c)		; read RR0 
+f4cc cb 47			bit 0, a		; check if bit 0 is set 
+f4ce 20 09			jr nz, getchrin		; character available 
+f4d0 1b				dec de 
+f4d1 7a				ld a, d 
+f4d2 b3				or e 
+f4d3 20 f1			jr nz, getcloop		; inner loop 
+f4d5 10 ef			djnz getcloop		; outer loop, number of seconds 
+f4d7 18 0b			jr getcnochr		; timeout 
+f4d9			getchrin: 
+f4d9 3a 1d f8			ld a, (sio_data) 
+f4dc 4f				ld c, a 
+f4dd ed 78			in a, (c)		; read character 
+f4df d1				pop de 
+f4e0 c1				pop bc 
+f4e1 37				scf 
+f4e2 3f				ccf			; Carry = 0, no timeout 
+f4e3 c9				ret 
+f4e4			getcnochr: 
+f4e4 3e 00			ld a, 0 
+f4e6 d1				pop de 
+f4e7 c1				pop bc 
+f4e8 37				scf			; Carry = 1, timeout 
+f4e9 c9				ret 
+f4ea			 
+f4ea			; getkey: gets a byte if available and reads it 
+f4ea			; returns: A - read byte or 0 if no byte available 
+f4ea			getkey: 
+f4ea c5				push bc 
+f4eb 3a 1c f8			ld a, (sio_ctrl) 
+f4ee 4f				ld c, a 
+f4ef ed 78			in a, (c)		; read RR0 
+f4f1 cb 47			bit 0, a		; check if bit 0 is set 
+f4f3 28 08			jr z, no_key		; if no - rx buffer has no data => return 0 
+f4f5 3a 1d f8			ld a, (sio_data) 
+f4f8 4f				ld c, a 
+f4f9 ed 78			in a, (c)		; read character 
+f4fb c1				pop bc 
+f4fc c9				ret 
+f4fd			no_key: 
+f4fd 3e 00			ld a, 0 
+f4ff c1				pop bc 
+f500 c9				ret 
+f501			 
+f501			; print_string: prints a string which starts at adress HL 
+f501			; and is terminated by EOS-character 
+f501			; affects: none 
+f501			print_string: 
+f501 f5				push af 
+f502 e5				push hl 
+f503			print_string_1: 
+f503 7e				ld a,(hl)		; load next character 
+f504 fe 00			cp 0			; is it en End Of String - character? 
+f506 28 06			jr z, print_string_2	; yes - return 
+f508 cd a7 f4			call putc		; no - print character 
+f50b 23				inc hl			; HL++ 
+f50c 18 f5			jr print_string_1	; do it again 
+f50e			print_string_2: 
+f50e e1				pop hl 
+f50f f1				pop af 
+f510 c9				ret 
+f511			 
+f511			; blink: the blink routine blinks the MEMSEL LED 
+f511			; the number of times to blink in register A 
+f511			; Must run in upper 32KB memory 
+f511			 
+f511			; Blink LED a number of times 
+f511			; using: A 
+f511			blink: 
+f511 32 22 f8			ld (ledblinks),a 
+f514			blinkloop: 
+f514 cd 34 f5			call blinkled 
+f517 3a 22 f8			ld a,(ledblinks) 
+f51a 3d				dec a 
+f51b 32 22 f8			ld (ledblinks),a 
+f51e c8				ret z 
+f51f 18 f3			jr blinkloop 
+f521			 
+f521			; Make delay wait a number of times 
+f521			; using: A 
+f521			delay: 
+f521 32 23 f8			ld (delays),a 
+f524			delayloop: 
+f524 cd 47 f5			call bdelay 
+f527 cd 47 f5			call bdelay 
+f52a 3a 23 f8			ld a,(delays) 
+f52d 3d				dec a 
+f52e 32 23 f8			ld (delays),a 
+f531 c8				ret z 
+f532 18 f0			jr delayloop 
+f534			 
+f534			; Blink LED once 
+f534			blinkled: 
+f534 d3 18			out (LEDON), a	; Green LED on 
+f536 cd 47 f5			call bdelay 
+f539 cd 47 f5			call bdelay 
+f53c 3e 00			ld a,0 
+f53e d3 14			out (LEDOFF),a	; Green LED off 
+f540 cd 47 f5			call bdelay 
+f543 cd 47 f5			call bdelay 
+f546 c9				ret 
+f547			 
+f547			; Suitable delay for blinking LED and waiting 
+f547			bdelay: 
+f547 e5				push hl 
+f548 21 40 1f			ld hl,8000	; number of loops to delay between blinks 
+f54b 22 20 f8			ld (loopcnt),hl 
+f54e			bdelayloop: 
+f54e 2a 20 f8			ld hl,(loopcnt) 
+f551 2b				dec hl 
+f552 7c				ld a,h 
+f553 b5				or l 
+f554 ca 5d f5			jp z,bleaveloop 
+f557 22 20 f8			ld (loopcnt),hl 
+f55a c3 4e f5			jp bdelayloop 
+f55d			bleaveloop: 
+f55d e1				pop hl 
+f55e c9				ret 
+f55f			 
+f55f			; The test program 
+f55f			testprog: 
+f55f 3e 11			ld a, 00010001b	; bit pattern to output on PIO A 
+f561 32 1e f8			ld (pio_out),a  
+f564			 
+f564			; Initialize interupt mode 2 and enable interupt 
+f564 ed 5e		        im 2 
+f566 3e f8		        ld a, ivblock / 256 
+f568 ed 47		        ld i, a 
+f56a fb			        ei 
+f56b			 
+f56b			; This test loop goes on "forever" 
+f56b			testloop: 
+f56b 3e 00		        ld a, 0         ; reset interrupt indicator 
+f56d 32 26 f8		        ld (gotint), a 
+f570			 
+f570			; test SIO channel A 
+f570 cd 6f f4			call sel_a_sio 
+f573 21 0c f0			ld hl, ver_msg 
+f576 cd 01 f5			call print_string 
+f579 21 90 f6			ld hl, tstop_msg 
+f57c cd 01 f5			call print_string 
+f57f 21 ab f6			ld hl, a_msg 
+f582 cd 01 f5			call print_string 
+f585 3e 00			ld a, 0 
+f587 32 1f f8			ld (keyin), a 
+f58a			nxt_a_key: 
+f58a cd ea f4			call getkey	; test if any input character available 
+f58d fe 03			cp CTRLC	; end the test 
+f58f ca 86 f0			jp z,menu 
+f592 b7				or a 
+f593 ca a1 f5			jp z, no_more_a_keys 
+f596 cd a7 f4			call putc 
+f599 3e 01			ld a, 1 
+f59b 32 1f f8			ld (keyin), a 
+f59e c3 8a f5			jp nxt_a_key 
+f5a1			no_more_a_keys: 
+f5a1 3a 1f f8			ld a, (keyin) 
+f5a4 b7				or a 
+f5a5 ca ae f5			jp z, no_a_key 
+f5a8 21 c5 f6			ld hl, a_in_msg 
+f5ab cd 01 f5			call print_string 
+f5ae			no_a_key: 
+f5ae 3e 01			ld a,1		; one LED blink after sending on SIO A 
+f5b0 cd 11 f5			call blink 
+f5b3 3e 02			ld a,2 
+f5b5 cd 21 f5			call delay 
+f5b8			 
+f5b8			; test SIO channel B 
+f5b8 cd 7c f4			call sel_b_sio 
+f5bb 21 0c f0			ld hl, ver_msg 
+f5be cd 01 f5			call print_string 
+f5c1 21 e2 f6			ld hl, b_msg 
+f5c4 cd 01 f5			call print_string 
+f5c7 3e 00			ld a, 0 
+f5c9 32 1f f8			ld (keyin), a 
+f5cc			nxt_b_key: 
+f5cc cd ea f4			call getkey	; test if any input character available 
+f5cf b7				or a 
+f5d0 ca de f5			jp z, no_more_b_keys 
+f5d3 cd a7 f4			call putc 
+f5d6 3e 01			ld a, 1 
+f5d8 32 1f f8			ld (keyin), a 
+f5db c3 cc f5			jp nxt_b_key 
+f5de			no_more_b_keys: 
+f5de 3a 1f f8			ld a, (keyin) 
+f5e1 b7				or a 
+f5e2 ca eb f5			jp z, no_b_key 
+f5e5 21 fc f6			ld hl, b_in_msg 
+f5e8 cd 01 f5			call print_string 
+f5eb			no_b_key: 
+f5eb 3e 02			ld a, 2			; two LED blinks after sending on SIO B 
+f5ed cd 11 f5			call blink 
+f5f0 3e 02			ld a, 2 
+f5f2 cd 21 f5			call delay 
+f5f5			 
+f5f5			; Test RAM 
+f5f5 21 19 f7			ld hl, ram_tst_start 
+f5f8 cd 6f f4			call sel_a_sio 
+f5fb cd 01 f5			call print_string 
+f5fe cd 7c f4			call sel_b_sio 
+f601 cd 01 f5			call print_string 
+f604 cd 53 f6			call test_ram 
+f607 21 2e f7			ld hl, ram_tst_ok 
+f60a 3a 24 f8			ld a,(ramerr)		; was there an error? 
+f60d b7				or a 
+f60e ca 14 f6			jp z, ram_prt	; no error 
+f611 21 46 f7			ld hl, ram_tst_err 
+f614			ram_prt: 
+f614 cd 6f f4			call sel_a_sio 
+f617 cd 01 f5			call print_string 
+f61a cd 7c f4			call sel_b_sio 
+f61d cd 01 f5			call print_string 
+f620 3e 03			ld a, 3			; three LED blinks after testing RAM 
+f622 cd 11 f5			call blink 
+f625 3e 02			ld a, 2 
+f627 cd 21 f5			call delay 
+f62a			 
+f62a			; Test if interupt recieved on SIO A 
+f62a cd 6f f4		        call sel_a_sio 
+f62d 21 80 f7		        ld hl, no_int_msg 
+f630 3a 26 f8		        ld a, (gotint)  ; Interupt recieved? 
+f633 b7			        or a 
+f634 ca 3a f6		        jp z, prtinta    ; no 
+f637 21 61 f7		        ld hl, int_msg 
+f63a			prtinta: 
+f63a cd 01 f5		        call print_string 
 f63d			 
-f63d			; test_ram: test RAM memory 
-f63d			test_ram: 
-f63d 3e 00			ld a, 0			; reset error flag 
-f63f 32 24 f8			ld (ramerr), a 
-f642 d3 04			out (MEMLORAM), a	; select RAM in lower 32KB address range, LED on 
-f644 3e 05			ld a, 5			; test a couple of times 
-f646 32 25 f8			ld (tests), a 
-f649			tstlop: 
-f649 01 00 f0			ld bc, monitor		; end of test: number of bytes to test 
-f64c 21 00 00			ld hl, 0x0000		; start address of test 
-f64f			tstram: 
-f64f 1e 00			ld e, 0x00 
-f651 73				ld (hl), e 
-f652 7e				ld a, (hl) 
-f653 bb				cp e 
-f654 ca 5c f6			jp z, tstff 
-f657 3e 01			ld a, 1 
-f659 32 24 f8			ld (ramerr), a 
-f65c			tstff: 
-f65c 1e ff			ld e, 0xff 
-f65e 73				ld (hl), e 
-f65f 7e				ld a, (hl) 
-f660 bb				cp e 
-f661 ca 69 f6			jp z, tstnxt 
-f664 3e 01			ld a, 1 
-f666 32 24 f8			ld (ramerr), a 
-f669			tstnxt: 
-f669 23				inc hl 
-f66a 0b				dec bc 
-f66b 78				ld a, b 
-f66c b1				or c 
-f66d 20 e0			jr nz, tstram 
-f66f 3a 25 f8			ld a, (tests) 
-f672 3d				dec a 
-f673 32 25 f8			ld (tests),a 
-f676 b7				or a 
-f677 20 d0			jr nz, tstlop 
-f679 c9				ret 
-f67a			 
-f67a			; Test messages 
-f67a			tstop_msg: 
-f67a .. 00			db "press Ctrl-C to end test\r\n", 0 
-f695			a_msg: 
-f695 .. 00			db "Output on SIO channel A\r\n", 0 
-f6af			a_in_msg: 
-f6af .. 00			db " <- input on SIO channal A\r\n", 0 
-f6cc			b_msg: 
-f6cc .. 00			db "Output on SIO channel B\r\n", 0 
-f6e6			b_in_msg: 
-f6e6 .. 00			db " <- input on SIO channal B\r\n", 0 
-f703			ram_tst_start: 
-f703 .. 00			db "Testing RAM memory\r\n", 0 
-f718			ram_tst_ok: 
-f718 .. 00			db "RAM memory test is ok\r\n", 0 
-f730			ram_tst_err: 
-f730 .. 00			db "Error in RAM memory test\r\n", 0 
-f74b			int_msg: 
-f74b .. 00		        db "Interrupt from CTC channel 3\r\n", 0 
-f76a			no_int_msg: 
-f76a .. 00		        db "No interupt from CTC channel 3\r\n", 0 
-f78b			 
-f78b			; Interupt routines, most are dummies for now 
-f78b			; CTC interupts for CH0 - CH2 not used 
-f78b			ctcint0: 
-f78b			ctcint1: 
-f78b			ctcint2: 
-f78b			; PIO interrupt routines, not used for now 
-f78b			piointa: 
-f78b			piointb: 
-f78b			; SIO interrupt routines, not used for now 
-f78b			siointa: 
-f78b			siointb: 
-f78b fb			        ei 
-f78c ed 4d		        reti 
-f78e			 
-f78e			; CTC interrupt for CH3 used to test interrupt 
-f78e			; sets indicator and outputs bit pattern on PIO ports 
-f78e			; then shifts the pattern left 
-f78e			ctcint3: 
-f78e f5			        push af 
-f78f 3e 01		        ld a, 1 
-f791 32 26 f8		        ld (gotint), a 
-f794 3a 1e f8			ld a, (pio_out) 
-f797 d3 10			out (PIO_A_DATA), a 
-f799 07				rlca 
-f79a 32 1e f8			ld (pio_out), a 
-f79d f1			        pop af 
-f79e fb			        ei 
-f79f ed 4d		        reti 
+f63d			; Test if interupt recieved 
+f63d cd 7c f4		        call sel_b_sio 
+f640 21 80 f7		        ld hl, no_int_msg 
+f643 3a 26 f8		        ld a, (gotint)  ; Interupt recieved? 
+f646 b7			        or a 
+f647 ca 4d f6		        jp z, prtintb    ; no 
+f64a 21 61 f7		        ld hl, int_msg 
+f64d			prtintb: 
+f64d cd 01 f5		        call print_string 
+f650			 
+f650 c3 6b f5			jp testloop 
+f653			 
+f653			; test_ram: test RAM memory 
+f653			test_ram: 
+f653 3e 00			ld a, 0			; reset error flag 
+f655 32 24 f8			ld (ramerr), a 
+f658 d3 04			out (MEMLORAM), a	; select RAM in lower 32KB address range, LED on 
+f65a 3e 05			ld a, 5			; test a couple of times 
+f65c 32 25 f8			ld (tests), a 
+f65f			tstlop: 
+f65f 01 00 ef			ld bc, monitor - 0x0100	; number of bytes to test 
+f662 21 00 01			ld hl, 0x0100		; start address of test 
+f665			tstram: 
+f665 1e 00			ld e, 0x00 
+f667 73				ld (hl), e 
+f668 7e				ld a, (hl) 
+f669 bb				cp e 
+f66a ca 72 f6			jp z, tstff 
+f66d 3e 01			ld a, 1 
+f66f 32 24 f8			ld (ramerr), a 
+f672			tstff: 
+f672 1e ff			ld e, 0xff 
+f674 73				ld (hl), e 
+f675 7e				ld a, (hl) 
+f676 bb				cp e 
+f677 ca 7f f6			jp z, tstnxt 
+f67a 3e 01			ld a, 1 
+f67c 32 24 f8			ld (ramerr), a 
+f67f			tstnxt: 
+f67f 23				inc hl 
+f680 0b				dec bc 
+f681 78				ld a, b 
+f682 b1				or c 
+f683 20 e0			jr nz, tstram 
+f685 3a 25 f8			ld a, (tests) 
+f688 3d				dec a 
+f689 32 25 f8			ld (tests),a 
+f68c b7				or a 
+f68d 20 d0			jr nz, tstlop 
+f68f c9				ret 
+f690			 
+f690			; Test messages 
+f690			tstop_msg: 
+f690 .. 00			db "press Ctrl-C to end test\r\n", 0 
+f6ab			a_msg: 
+f6ab .. 00			db "Output on SIO channel A\r\n", 0 
+f6c5			a_in_msg: 
+f6c5 .. 00			db " <- input on SIO channal A\r\n", 0 
+f6e2			b_msg: 
+f6e2 .. 00			db "Output on SIO channel B\r\n", 0 
+f6fc			b_in_msg: 
+f6fc .. 00			db " <- input on SIO channal B\r\n", 0 
+f719			ram_tst_start: 
+f719 .. 00			db "Testing RAM memory\r\n", 0 
+f72e			ram_tst_ok: 
+f72e .. 00			db "RAM memory test is ok\r\n", 0 
+f746			ram_tst_err: 
+f746 .. 00			db "Error in RAM memory test\r\n", 0 
+f761			int_msg: 
+f761 .. 00		        db "Interrupt from CTC channel 3\r\n", 0 
+f780			no_int_msg: 
+f780 .. 00		        db "No interupt from CTC channel 3\r\n", 0 
 f7a1			 
-f7a1			endofcode: 
-f7a1			 
-f7a1			; Interupt vectors for interupt mode 2 
-f7a1			; make sure that the block is on an even 256 byte address 
-f7a1			if endofcode & 0x00ff 
-f7a1 0xff...		        ds 256 - (endofcode & 0x00ff), 0xff 
+f7a1			; Interupt routines, most are dummies for now 
+f7a1			; CTC interupts for CH0 - CH2 not used 
+f7a1			ctcint0: 
+f7a1			ctcint1: 
+f7a1			ctcint2: 
+f7a1			; PIO interrupt routines, not used for now 
+f7a1			piointa: 
+f7a1			piointb: 
+f7a1			; SIO interrupt routines, not used for now 
+f7a1			siointa: 
+f7a1			siointb: 
+f7a1 fb			        ei 
+f7a2 ed 4d		        reti 
+f7a4			 
+f7a4			; CTC interrupt for CH3 used to test interrupt 
+f7a4			; sets indicator and outputs bit pattern on PIO ports 
+f7a4			; then shifts the pattern left 
+f7a4			ctcint3: 
+f7a4 f5			        push af 
+f7a5 3e 01		        ld a, 1 
+f7a7 32 26 f8		        ld (gotint), a 
+f7aa 3a 1e f8			ld a, (pio_out) 
+f7ad d3 10			out (PIO_A_DATA), a 
+f7af 07				rlca 
+f7b0 32 1e f8			ld (pio_out), a 
+f7b3 f1			        pop af 
+f7b4 fb			        ei 
+f7b5 ed 4d		        reti 
+f7b7			 
+f7b7			endofcode: 
+f7b7			 
+f7b7			; Interupt vectors for interupt mode 2 
+f7b7			; make sure that the block is on an even 256 byte address 
+f7b7			if endofcode & 0x00ff 
+f7b7 0xff...		        ds 256 - (endofcode & 0x00ff), 0xff 
 f800			endif 
 f800			 
 f800			ivblock: 
@@ -1001,29 +1029,29 @@ f800			; The SIO interupt vector block must be on
 f800			; an even 16 byte address if "status affects vector" is used 
 f800			 
 f800			sioiv: 
-f800 8b f7		        dw siointa 
-f802 8b f7		        dw siointa 
-f804 8b f7		        dw siointa 
-f806 8b f7		        dw siointa 
-f808 8b f7		        dw siointb 
-f80a 8b f7		        dw siointb 
-f80c 8b f7		        dw siointb 
-f80e 8b f7		        dw siointb 
+f800 a1 f7		        dw siointa 
+f802 a1 f7		        dw siointa 
+f804 a1 f7		        dw siointa 
+f806 a1 f7		        dw siointa 
+f808 a1 f7		        dw siointb 
+f80a a1 f7		        dw siointb 
+f80c a1 f7		        dw siointb 
+f80e a1 f7		        dw siointb 
 f810			 
 f810			; The CTC interupt vector block must be on 
 f810			; an even 8 byte address 
 f810			ctciv: 
-f810 8b f7		        dw ctcint0 
-f812 8b f7		        dw ctcint1 
-f814 8b f7		        dw ctcint2 
-f816 8e f7		        dw ctcint3 
+f810 a1 f7		        dw ctcint0 
+f812 a1 f7		        dw ctcint1 
+f814 a1 f7		        dw ctcint2 
+f816 a4 f7		        dw ctcint3 
 f818			 
 f818			; The PIO interupt vectors must be on 
 f818			; an even 2 byte address 
 f818			pioaiv: 
-f818 8b f7		        dw piointa 
+f818 a1 f7		        dw piointa 
 f81a			piobiv: 
-f81a 8b f7		        dw piointb 
+f81a a1 f7		        dw piointb 
 f81c			 
 f81c			; Variables 
 f81c			sio_ctrl: 

@@ -69,6 +69,20 @@ boot:
 	ldir
 	jp monitor
 
+; The NMI routine is on the fixed address 0x0066
+nmipad:
+	ds 0x66 - (nmipad - boot)
+nmi:
+	ex af,af'
+	exx
+	; do something here if needed
+	jp nmipatch
+nmipatch:
+	exx
+	ex af,af'
+	retn
+nmiend:
+
 ; The monitor program is copied from this address in the EPROM
 ; or RAM if uploaded
 moneprom:
@@ -79,12 +93,14 @@ monitor:
 
 ; Fixed address for reload from EPROM: MONADR + 3
 fixedreload:
+	ld a, 00000011b		; sw reset CTC2 to stop NMIs
+	out (CTC_CH2), a
 	out (MEMEPROM), a	; select EPROM in lower 32KB address range
 	jp 0x0000		; and jump to start of EPROM
 
 ; Messages to send on serial channels at start and test
 ver_msg:
-        db "Z80 computer board, z80mon version 1.2"
+        db "Z80 computer board, z80mon version 1.6"
 	include "mbuilt.z80"
 	db "\r\n", 0
 
@@ -122,9 +138,17 @@ startmon:
 menu:
 	di
 
-	ld a, 0
-	out (MEMEPROM), a	; select EPROM in lower 32KB address range
-	
+	; Copy NMI code to RAM also
+	ld hl, nmi
+	ld de, monend
+	ld bc, nmiend - nmi
+	ldir
+	out (MEMLORAM),a	; select RAM in lower 32KB address range
+	ld hl, monend
+	ld de, nmi
+	ld bc, nmiend - nmi
+	ldir
+
 	call sel_a_sio
 	ld hl, ver_msg
 	call print_string
@@ -167,6 +191,7 @@ menu_msg:
 upload:
 	ld hl, upload_msg
 	call print_string
+	
 	out (MEMLORAM),a	; select RAM in lower 32KB address range
 
 ; Xmodem recieve file and put in memory
@@ -356,7 +381,6 @@ xnodebu5:
 	dec hl
 	ld a, 'O'
 	ld (hl), a
-
 	
 	;write message that upload was ok
 	ld a,3			;wait a while first
@@ -384,6 +408,7 @@ uperr_msg:
 reload:
 	ld hl, reload_msg
 	call print_string
+	out (MEMEPROM), a	; select EPROM in lower 32KB address range
 	jp 0x0000
 
 reload_msg:
@@ -464,19 +489,27 @@ pio_init:
 	;PIO B, SPI interface
 	ld a, 11001111b		; mode 3
 	out (PIO_B_CTRL), a
-	ld a, 11110001b		; i/o mask
-	; bit 0: MISO - input
-	; bit 1: MOSI - output
-	; bit 2: SCK  - output
-	; bit 3: /CS  - output
-	; bit 4 - 7:  - inputs but not used (yet)
+	ld a, 00000001b		; i/o mask
+	;bit 0: MISO - input     3                   3
+	;bit 1: MOSI - output    4                   5
+	;bit 2: SCK  - output    5                   7
+	;bit 3: /CS0 - output    6                   9
+	;bit 4: /CS1 - output  extra device select  11
+	;bit 5: /CS2 - output  extra device select  10
+	;bit 6: TP1  - output  test point            8  (used to measure NMI handling time)
+	;bit 7: TRA  - output  byte in transfer      6   signals that NMI routine is active
+	;                                                with an 8 bit transmit or receive transfer
 	out (PIO_B_CTRL), a
 	ld a, 00000111b		; int disable
 	out (PIO_B_CTRL), a
-	ld a, 00001000b		;initialize output bits
+	ld a, 00111010b		;initialize output bits
 	; bit 1: MOSI - output	;low
 	; bit 2: SCK  - output	;low
-	; bit 3: /CS  - output	;high = not selected
+	; bit 3: /CS0 - output	;high = not selected
+	; bit 4: /CS1 - output	;high = not selected
+	; bit 5: /CS2 - output	;high = not selected
+	; bit 6: TP1  - output  ;low
+	; bit 7: TRA  - output  ;low
 	out (PIO_B_DATA), a
 	ret
 
@@ -521,12 +554,7 @@ ctc_init:
 	out (CTC_CH1), a
 
 	; CTC chan 2
-	ld a, 01000111b		; int off, counter mode, prescaler don't care,
-				; falling edge, time trigger don't care,
-				; time constant follows, sw reset, 
-				; this is a ctrl cmd
-	out (CTC_CH2), a
-	ld a, 100		; divide BCLK by 100
+	ld a, 00000011b		; sw reset, this is a ctrl cmd
 	out (CTC_CH2), a
 
         ; CTC chan 3 setup
@@ -817,9 +845,9 @@ no_more_a_keys:
 	ld hl, a_in_msg
 	call print_string
 no_a_key:
-	ld a,5		; five LED blinks after sending on SIO A
+	ld a,1		; one LED blink after sending on SIO A
 	call blink
-	ld a,5
+	ld a,2
 	call delay
 
 ; test SIO channel B
@@ -845,7 +873,7 @@ no_more_b_keys:
 	ld hl, b_in_msg
 	call print_string
 no_b_key:
-	ld a, 6			; six LED blinks after sending on SIO B
+	ld a, 2			; two LED blinks after sending on SIO B
 	call blink
 	ld a, 2
 	call delay
@@ -867,7 +895,7 @@ ram_prt:
 	call print_string
 	call sel_b_sio
 	call print_string
-	ld a, 7			; seven LED blinks after testing RAM
+	ld a, 3			; three LED blinks after testing RAM
 	call blink
 	ld a, 2
 	call delay
@@ -902,8 +930,8 @@ test_ram:
 	ld a, 5			; test a couple of times
 	ld (tests), a
 tstlop:
-	ld bc, monitor		; end of test: number of bytes to test
-	ld hl, 0x0000		; start address of test
+	ld bc, monitor - 0x0100	; number of bytes to test
+	ld hl, 0x0100		; start address of test
 tstram:
 	ld e, 0x00
 	ld (hl), e

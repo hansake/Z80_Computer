@@ -1,0 +1,143 @@
+Upload test program with monitor and then run the test program with Transend microSD 2GB:
+
+                                      
+Z80 computer board, z80mon version 1.6, Built 2021-10-24 17:42                  
+Press 't' to start test                                                         
+      'u' to upload file to memory                                              
+      'r' to reload from EPROM                                                  
+      'g' to execute (go) from RAM address 0x0000                               
+upload file using Xmodem                                                        
+ upload complete                                                                
+Z80 computer board, z80mon version 1.6, Built 2021-10-24 17:42                  
+Press 't' to start test                                                         
+      'u' to upload file to memory                                              
+      'r' to reload from EPROM                                                  
+      'g' to execute (go) from RAM address 0x0000                               
+executing code from address 0x0000 in RAM                                       
+                                                                                
+sdcardtst version 1.2, Built 2021-11-08 16:55                                   
+cmd (h for help):  i - initialize SD card                                       
+Sent 8 clock pulses                                                             
+CMD0 R1 response 0x01                                                           
+  CRC7 sent: 0x95, calc: 0x95                                                   
+CMD8 R7 response 0x01 0x00 0x00 0x01 0xaa                                       
+  CRC7 sent: 0x87, calc: 0x87                                                   
+  Voltage accepted: 2.7-3.6V                                                    
+CMD55 R1 response 0x01                                                          
+  CRC7 sent: 0x65, calc: 0x65                                                   
+ACMD41 R1 response 0x01                                                         
+  CRC7 sent: 0x33, calc: 0x33                                                   
+CMD55 R1 response 0x01                                                          
+  CRC7 sent: 0x65, calc: 0x65                                                   
+ACMD41 R1 response 0x00                                                         
+  CRC7 sent: 0x33, calc: 0x33                                                   
+CMD58 R3 response 0x00 0x80 0xff 0x80 0x00 - OCR register                       
+  CRC7 sent: 0xfd, calc: 0xfd                                                   
+CMD16 R1 response 0x00                                                          
+  CRC7 sent: 0x15, calc: 0x15                                                   
+CMD10 R1 response 0x00                                                          
+  CRC7 sent: 0x1b, calc: 0x1b                                                   
+CID data:                                                                       
+  1b 53 4d 30 30 30 30 30 10 27 51 04 69 00 c8 81  |.SM00000.'Q.i...|           
+CMD9 R1 response 0x00                                                           
+  CRC7 sent: 0xaf, calc: 0xaf                                                   
+CSD data:                                                                       
+  00 2f 00 32 5b 5a 83 ba 6d b7 ff bf 16 80 00 f1  |./.2[Z..m.......|           
+cmd (h for help):  r - read block                                               
+CMD17 R1 response 0x00                                                          
+  CRC7 sent: 0x55, calc: 0x55                                                   
+Data block 0:                                                                   
+  Recieved CRC16: 0x2702, calc: 0x2702                                          
+cmd (h for help):  w - write block                                              
+CMD24 R1 response 0x00                                                          
+  CRC7 sent: 0x6f, calc: 0x6f                                                   
+Data block 0:                                                                   
+Data response 0x05, data accepted                                               
+  Transmitted CRC16: 0x2702, calc: 0x2702                                       
+cmd (h for help):  s - print SD registers                                       
+OCR register:                                                                   
+2.7-2.8V (bit 15) 2.8-2.9V (bit 16) 2.9-3.0V (bit 17) 3.0-3.1V (bit 18)         
+3.1-3.2V (bit 19) 3.2-3.3V (bit 20) 3.3-3.4V (bit 21) 3.4-3.5V (bit 22)         
+3.5-3.6V (bit 23)                                                               
+Card Capacity Status (CCS) (bit 30) not set                                     
+  SD Ver.2+, Byte address                                                       
+Card power up status bit (busy) (bit 31) set                                    
+-----------                                                                     
+CID register:                                                                   
+MID: 27 (0x1b), OID: SM, PNM: 00000, PRV: 1.0, PSN: 73990144, MDT: 2012-8       
+-----------                                                                     
+CSD register:                                                                   
+CSD Version 1.0, Standard Capacity                                              
+ Device capacity: 1954816 Kbyte, 1909 Mbyte                                     
+-----------                                                                     
+cmd (h for help): 
+sdcardtst version 1.2, Built 2021-11-08 16:55                                   
+Commands:                                                                       
+  h - help                                                                      
+  d - byte level debug on                                                       
+  o - byte level debug off                                                      
+  i - initialize                                                                
+  n - set/show block #N to read/write                                           
+  r - read block #N                                                             
+  w - write block #N                                                            
+  p - print block last read or written                                          
+  s - print SD registers                                                        
+  Ctrl-C to reload monitor.                                                     
+cmd (h for help): 
+
+Run test program with Verbatim microSD HC 16GB:
+
+sdcardtst version 1.2, Built 2021-11-08 16:55                                   
+Commands:                                                                       
+  h - help                                                                      
+  d - byte level debug on                                                       
+  o - byte level debug off                                                      
+  i - initialize                                                                
+  n - set/show block #N to read/write                                           
+  r - read block #N                                                             
+  w - write block #N                                                            
+  p - print block last read or written                                          
+  s - print SD registers                                                        
+  Ctrl-C to reload monitor.                                                     
+cmd (h for help):  i - initialize SD card                                       
+Sent 8 clock pulses                                                             
+CMD0 R1 response 0x01                                                           
+  CRC7 sent: 0x95, calc: 0x95                                                   
+CMD8 R7 response 0x01 0x00 0x00 0x01 0xaa                                       
+  CRC7 sent: 0x87, calc: 0x87                                                   
+  Voltage accepted: 2.7-3.6V                                                    
+CMD55 R1 response 0x01                                                          
+  CRC7 sent: 0x65, calc: 0x65                                                   
+ACMD41 R1 response 0x01                                                         
+  CRC7 sent: 0x33, calc: 0x33                                                   
+CMD55 R1 response 0x01                                                          
+  CRC7 sent: 0x65, calc: 0x65                                                   
+ACMD41 R1 response 0x00                                                         
+  CRC7 sent: 0x33, calc: 0x33                                                   
+CMD58 R3 response 0x00 0xc0 0xff 0x80 0x00 - OCR register                       
+  CRC7 sent: 0xfd, calc: 0xfd                                                   
+CMD10 R1 response 0x00                                                          
+  CRC7 sent: 0x1b, calc: 0x1b                                                   
+CID data:                                                                       
+  27 50 48 53 44 31 36 47 60 6c cc bc 2f 01 4b 9b  |'PHSD16G`l../.K.|           
+CMD9 R1 response 0x00                                                           
+  CRC7 sent: 0xaf, calc: 0xaf                                                   
+CSD data:                                                                       
+  40 0e 00 32 5b 59 00 00 73 5f 7f 80 0a 40 00 25  |@..2[Y..s_...@.%|           
+cmd (h for help):  s - print SD registers                                       
+OCR register:                                                                   
+2.7-2.8V (bit 15) 2.8-2.9V (bit 16) 2.9-3.0V (bit 17) 3.0-3.1V (bit 18)         
+3.1-3.2V (bit 19) 3.2-3.3V (bit 20) 3.3-3.4V (bit 21) 3.4-3.5V (bit 22)         
+3.5-3.6V (bit 23)                                                               
+Card Capacity Status (CCS) (bit 30) set                                         
+  SD Ver.2+, Block address                                                      
+Card power up status bit (busy) (bit 31) set                                    
+-----------                                                                     
+CID register:                                                                   
+MID: 39 (0x27), OID: PH, PNM: SD16G, PRV: 6.0, PSN: 3157196800, MDT: 2020-11    
+-----------                                                                     
+CSD register:                                                                   
+CSD Version 2.0, High Capacity and Extended Capacity                            
+ Device capacity: 15122432 Kbyte, 14768 Mbyte                                   
+-----------                                                                     
+cmd (h for help): 

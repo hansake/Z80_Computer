@@ -10,18 +10,28 @@
  *  This code was hacked together to implement/test
  *  a "bit-banger" SPI interface to a SD card for
  *  the Z80 computer.
- *  (in the process the Whitesmith C compiler for
- *  Z80 was also rather thoroughly tested)
  *
- *  The intention is to clean up this code and
- *  use it as a base for a SD card driver for CP/M.
+ *  The idea is to use his program to understand
+ *  how the SPI and SD card interfaces and the
+ *  partitioning of a SD card works in order
+ *  to make a CP/M disk driver for SD card
+ *  that handles multiple partitions and
+ *  presents a CP/M drive for each partition.
+ *
+ *  In the process the Whitesmith C compiler for
+ *  Z80 was also rather thoroughly tested.
+ *
+ *  Be warned that this is a very ugly hack
+ *  the intention is to clean it up to much
+ *  more nice looking code.
+ *
  */
 
 #include <std.h>
 #include "z80computer.h"
 #include "builddate.h"
 
-#define SDTSTVER "\r\nsdcardtst version 1.2, "
+#define SDTSTVER "\r\nsdcardtst version 1.5, "
 
 unsigned char ocrreg[4] = {0};
 unsigned char cidreg[16] = {0};
@@ -31,6 +41,7 @@ char txtin[81];
 char txtout[256];
 int debugflg = 0;
 int ready = NO;
+int prthex = NO;
 unsigned char *dataptr;
 unsigned char *rxtxptr = NULL;
 unsigned long blockno = 0;
@@ -42,14 +53,6 @@ void putc(char pchar)
 	while ((in(SIO_A_CTRL) & 0x04) == 0) /* wait for tx buffer empty */
 		;
 	out(SIO_A_DATA, pchar);
-	}
-
-/* Print character on serial port B */
-void putcb(char pchar)
-	{
-	while ((in(SIO_B_CTRL) & 0x04) == 0) /* wait for tx buffer empty */
-		;
-	out(SIO_B_DATA, pchar);
 	}
 
 /* Print string on serial port A */
@@ -120,8 +123,8 @@ void ledoff()
 	}
 
 /* CRC routines from:
-https://github.com/LonelyWolf/stm32/blob/master/stm32l-dosfs/sdcard.c
-*/
+ * https://github.com/LonelyWolf/stm32/blob/master/stm32l-dosfs/sdcard.c
+ */
 
 /*
 // Calculate CRC7
@@ -233,7 +236,6 @@ unsigned char *sdcommand(unsigned char *sndbuf, int sndbytes, unsigned char *rec
 				prtstr("\r\n");
 				debugnl = 0;
 				}
-			putcb('*');
 			}
 		}
 	if (debugflg)
@@ -268,16 +270,8 @@ unsigned char *sdcommand(unsigned char *sndbuf, int sndbytes, unsigned char *rec
 				prtstr("\r\n");
 				debugnl = 0;
 				}
-			putcb('-');
 			}
 		}
-	if (debugflg)
-		{
-		prtstr("\r\n");
-		putcb('\r');
-		putcb('\n');
-		}
-
 	return (retptr);
 	}
 
@@ -316,72 +310,54 @@ void sdinit()
 	spiselect();
 
 	/* CMD0: GO_IDLE_STATE */
+	cmd0[7] = CRC7_buf(&cmd0[2], 5) | 0x01;
 	statptr = sdcommand(cmd0, sizeof cmd0, rxbuf, 8);
-	chars = decode(txtout, sizeof(txtout), "CMD0 R1 response 0x%+02hi\r\n", statptr[0]);
-	txtout[chars] = 0;
-	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd0[7], CRC7_buf(&cmd0[2], 5) | 0x01);
+	chars = decode(txtout, sizeof(txtout), "CMD0: GO_IDLE_STATE, R1 response [%+02hi]\r\n",
+		statptr[0]);
 	txtout[chars] = 0;
 	prtstr(txtout);
 
 	/* CMD8: SEND_IF_COND */
+	cmd8[7] = CRC7_buf(&cmd8[2], 5) | 0x01;
 	statptr = sdcommand(cmd8, sizeof cmd8, rxbuf, 8);
 	chars = decode(txtout, sizeof(txtout),
-		"CMD8 R7 response 0x%+02hi 0x%+02hi 0x%+02hi 0x%+02hi 0x%+02hi\r\n",
+		"CMD8: SEND_IF_COND, R7 response [%+02hi %+02hi %+02hi %+02hi %+02hi]\r\n",
 		 statptr[0], statptr[1], statptr[2], statptr[3], statptr[4]);
 	txtout[chars] = 0;
 	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd8[7], CRC7_buf(&cmd8[2], 5) | 0x01);
-	txtout[chars] = 0;
-	prtstr(txtout);
 	if ((statptr[3] & 0x0f) == 0x01)
-		prtstr("  Voltage accepted: 2.7-3.6V\r\n");
+		prtstr("  Voltage accepted: 2.7-3.6V, ");
+	if (statptr[4] == 0xaa)
+		prtstr("echo back ok\r\n");
+	else
+		prtstr("invalid echo back\r\n");
 
 	/* CMD55: APP_CMD followed by ACMD41: SEND_OP_COND until status is 0x00 */
 	for (tries = 0; tries < 8; tries++)
 		{
+		cmd55[7] =  CRC7_buf(&cmd55[2], 5) | 0x01;
 		statptr = sdcommand(cmd55, sizeof cmd55, rxbuf, 8);
-		chars = decode(txtout, sizeof(txtout), "CMD55 R1 response 0x%+02hi\r\n", statptr[0]);
-		txtout[chars] = 0;
-		prtstr(txtout);
 		chars = decode(txtout, sizeof(txtout),
-			"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-			/* bit 0 of last byte is always 1 (end bit) */
-			cmd55[7], CRC7_buf(&cmd55[2], 5) | 0x01);
+			"CMD55: APP_CMD, R1 response [%+02hi]\r\n", statptr[0]);
 		txtout[chars] = 0;
 		prtstr(txtout);
 
+		acmd41[7] = CRC7_buf(&acmd41[2], 5) | 0x01;
 		statptr = sdcommand(acmd41, sizeof acmd41, rxbuf, 8);
-		chars = decode(txtout, sizeof(txtout), "ACMD41 R1 response 0x%+02hi\r\n", statptr[0]);
-		txtout[chars] = 0;
-		prtstr(txtout);
 		chars = decode(txtout, sizeof(txtout),
-			"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-			/* bit 0 of last byte is always 1 (end bit) */
-			acmd41[7], CRC7_buf(&acmd41[2], 5) | 0x01);
+			"ACMD41: SEND_OP_COND, R1 response [%+02hi]\r\n", statptr[0]);
 		txtout[chars] = 0;
 		prtstr(txtout);
-		if (*statptr == 0x00)
+		if (statptr[0] == 0x00)
 			break;
 		}
 
 	/* CMD58: READ_OCR */
+	cmd58[7] = CRC7_buf(&cmd58[2], 5) | 0x01;
 	statptr = sdcommand(cmd58, sizeof cmd58, rxbuf, 8);
 	chars = decode(txtout, sizeof(txtout),
-		"CMD58 R3 response 0x%+02hi 0x%+02hi 0x%+02hi 0x%+02hi 0x%+02hi - OCR register\r\n",
+		"CMD58: READ_OCR, R3 response [%+02hi %+02hi %+02hi %+02hi %+02hi]\r\n",
 		 statptr[0], statptr[1], statptr[2], statptr[3], statptr[4]);
-	txtout[chars] = 0;
-	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd58[7], CRC7_buf(&cmd58[2], 5) | 0x01);
 	txtout[chars] = 0;
 	prtstr(txtout);
 	cpybuf(&ocrreg[0], &statptr[1], sizeof (ocrreg));
@@ -402,40 +378,32 @@ void sdinit()
 	/* CMD 16: SET_BLOCKLEN, only if Byte address */
 	if (blkmult == 512)
 		{
+		cmd16[7] = CRC7_buf(&cmd16[2], 5) | 0x01;
 		statptr = sdcommand(cmd16, sizeof cmd16, rxbuf, 8);
-		chars = decode(txtout, sizeof(txtout), "CMD16 R1 response 0x%+02hi\r\n", statptr[0]);
-		txtout[chars] = 0;
-		prtstr(txtout);
 		chars = decode(txtout, sizeof(txtout),
-			"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-			/* bit 0 of last byte is always 1 (end bit) */
-			cmd16[7], CRC7_buf(&cmd16[2], 5) | 0x01);
+			"CMD16: SET_BLOCKLEN (to 512 bytes), R1 response [%+02hi]\r\n", statptr[0]);
 		txtout[chars] = 0;
 		prtstr(txtout);
 		}
 
 	/* CMD10: SEND_CID */
+	cmd10[7] = CRC7_buf(&cmd10[2], 5) | 0x01;
 	statptr = sdcommand(cmd10, sizeof cmd10, rxbuf, 20);
-	chars = decode(txtout, sizeof(txtout), "CMD10 R1 response 0x%+02hi\r\n", statptr[0]);
-	txtout[chars] = 0;
-	prtstr(txtout);
 	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd10[7], CRC7_buf(&cmd10[2], 5) | 0x01);
+		"CMD10: SEND_CID, R1 response [%+02hi]\r\n", statptr[0]);
 	txtout[chars] = 0;
 	prtstr(txtout);
 	for (tries = 0; (tries < 20) && (*statptr != 0xfe); tries++, statptr++)
 		; /* looking for 0xfe that is the byte before data */
 	if (*statptr != 0xfe)
 		{
-		prtstr("No data found\r\n");
+		prtstr("  No data found\r\n");
 		}
 	else
 		{
 		statptr++;
 		prtptr = statptr;
-		prtstr("CID data:\r\n  ");
+		prtstr("  CID: [");
 		for (rxbytes = 0; rxbytes < 16; rxbytes++, prtptr++)
 			{
 			chars = decode(txtout, sizeof(txtout), "%+02hi ", *prtptr);
@@ -443,7 +411,7 @@ void sdinit()
         	        prtstr(txtout);
 			}
 		prtptr = statptr;
-		prtstr(" |");
+		prtstr("\b] |");
 		for (rxbytes = 0; rxbytes < 16; rxbytes++, prtptr++)
 			{
 			if ((' ' <= *prtptr) && (*prtptr < 127))
@@ -456,27 +424,23 @@ void sdinit()
 		}
 
 	/* CMD9: SEND_CSD */
+	cmd9[7] = CRC7_buf(&cmd9[2], 5) | 0x01;
 	statptr = sdcommand(cmd9, sizeof cmd9, rxbuf, 20);
-	chars = decode(txtout, sizeof(txtout), "CMD9 R1 response 0x%+02hi\r\n", statptr[0]);
-	txtout[chars] = 0;
-	prtstr(txtout);
 	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd9[7], CRC7_buf(&cmd9[2], 5) | 0x01);
+		"CMD9: SEND_CSD, R1 response [%+02hi]\r\n", statptr[0]);
 	txtout[chars] = 0;
 	prtstr(txtout);
 	for (tries = 0; (tries < 20) && (*statptr != 0xfe); tries++, statptr++)
 		; /* looking for 0xfe that is the byte before data */
 	if (*statptr != 0xfe)
 		{
-		prtstr("No data found\r\n");
+		prtstr("  No data found\r\n");
 		}
 	else
 		{
 		statptr++;
 		prtptr = statptr;
-		prtstr("CSD data:\r\n  ");
+		prtstr("  CSD: [");
 		for (rxbytes = 0; rxbytes < 16; rxbytes++, prtptr++)
 			{
 			chars = decode(txtout, sizeof(txtout), "%+02hi ", *prtptr);
@@ -484,7 +448,7 @@ void sdinit()
         	        prtstr(txtout);
 			}
 		prtptr = statptr;
-		prtstr(" |");
+		prtstr("\b] |");
 		for (rxbytes = 0; rxbytes < 16; rxbytes++, prtptr++)
 			{
 			if ((' ' <= *prtptr) && (*prtptr < 127))
@@ -507,7 +471,7 @@ void sdinit()
 unsigned char cmd17[] = {0xff, 0xff, 0x51, 0x00, 0x00, 0x00, 0x00, 0x55};
 
 /* read data block */
-void sdread()
+int sdread(int printit)
 	{
 	unsigned char *rxdata;
 	unsigned char *statptr;
@@ -525,7 +489,7 @@ void sdread()
 		prtstr("SD card not initialized\r\n");
 		spideselect();
 		ledoff();
-		return;
+		return (NO);
 		}
 
 	/* CMD17: READ_SINGLE_BLOCK */
@@ -541,21 +505,24 @@ void sdread()
 	blktoread = blktoread >> 8;
 
 	statptr = sdcommand(cmd17, sizeof cmd17, rxbuf, 530);
-	chars = decode(txtout, sizeof(txtout), "CMD17 R1 response 0x%+02hi\r\n", statptr[0]);
-	txtout[chars] = 0;
-	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd17[7], CRC7_buf(&cmd17[2], 5) | 0x01);
-	txtout[chars] = 0;
-	prtstr(txtout);
+	if (printit)
+		{
+		chars = decode(txtout, sizeof(txtout), "CMD17 R1 response 0x%+02hi\r\n", statptr[0]);
+		txtout[chars] = 0;
+		prtstr(txtout);
+		chars = decode(txtout, sizeof(txtout),
+			"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
+			/* bit 0 of last byte is always 1 (end bit) */
+			cmd17[7], CRC7_buf(&cmd17[2], 5) | 0x01);
+		txtout[chars] = 0;
+		prtstr(txtout);
+		}
 	if (statptr[0])
 		{
 		prtstr("could not read block\r\n");
 		spideselect();
 		ledoff();
-		return;
+		return (NO);
 		}
 	statptr++;
 	for (tries = 0; (tries < 80) && (*statptr != 0xfe); tries++, statptr++)
@@ -569,32 +536,40 @@ void sdread()
 				 *statptr);
 			txtout[chars] = 0;
 			prtstr(txtout);
-			break;
+			spideselect();
+			ledoff();
+			return (NO);
 			}
 		}
 	if (*statptr != 0xfe)
 		{
 		prtstr("No data found\r\n");
+		spideselect();
+		ledoff();
+		return (NO);
 		}
 	else
 		{
 		dataptr = statptr + 1;
 		rxdata = dataptr;
 		rxtxptr = dataptr;
-		chars = decode(txtout, sizeof(txtout), "Data block %ul:\r\n", blockno);
-		txtout[chars] = 0;
-		prtstr(txtout);
-		chars = decode(txtout, sizeof(txtout),
-			"  Recieved CRC16: 0x%+04hi, calc: 0x%+04hi\r\n",
-			(rxdata[0x200] << 8) + rxdata[0x201], 
-			CRC16_buf(rxdata, 512));
-	       	txtout[chars] = 0;
-		prtstr(txtout);
+		if (printit)
+			{
+			chars = decode(txtout, sizeof(txtout), "Data block %ul:\r\n", blockno);
+			txtout[chars] = 0;
+			prtstr(txtout);
+			chars = decode(txtout, sizeof(txtout),
+				"  Recieved CRC16: 0x%+04hi, calc: 0x%+04hi\r\n",
+				(rxdata[0x200] << 8) + rxdata[0x201], 
+				CRC16_buf(rxdata, 512));
+		       	txtout[chars] = 0;
+			prtstr(txtout);
+			}
 		}
 
 	spideselect();
 	ledoff();
-
+	return (YES);
 	}
 
 /* CMD24 is the write block command */
@@ -830,7 +805,7 @@ void sdprtreg()
 		csize = (csdreg[8] >> 6) + ((unsigned int) csdreg[7] << 2) + ((unsigned int) (csdreg[6] & 0x03) << 10) + 1;
 		capacity = (unsigned long) csize << (n-10);
 		chars = decode(txtout, sizeof(txtout),
-		 " Device capacity: %ul Kbyte, %ul Mbyte\r\n",
+		 " Device capacity: %ul KByte, %ul MByte\r\n",
 		  capacity, capacity >> 10);
 		txtout[chars] = 0;
 		prtstr(txtout);
@@ -842,7 +817,7 @@ void sdprtreg()
 		 + ((unsigned long)(csdreg[7] & 63) << 16) + 1;
 		capacity = devsize << 9;
 		chars = decode(txtout, sizeof(txtout),
-		 " Device capacity: %ul Kbyte, %ul Mbyte\r\n",
+		 " Device capacity: %ul KByte, %ul MByte\r\n",
 		  capacity, capacity >> 10);
 		txtout[chars] = 0;
 		prtstr(txtout);
@@ -851,6 +826,314 @@ void sdprtreg()
 		prtstr("CSD Version 3.0, Ultra Capacity (SDUC)\r\n");
 
 	prtstr("-----------\r\n");
+	}
+
+/* print GUID (mixed endian format) */
+void prtguid(unsigned char *guidptr)
+	{
+	int chars;
+	int index;
+
+	chars = decode(txtout, sizeof(txtout), "%+02hi%+02hi%+02hi%+02hi-",
+		guidptr[3], guidptr[2], guidptr[1], guidptr[0]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout), "%+02hi%+02hi-",
+		guidptr[5], guidptr[4]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout), "%+02hi%+02hi-",
+		guidptr[7], guidptr[6]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout), "%+02hi%+02hi-",
+		guidptr[8], guidptr[9]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout), "%+02hi%+02hi%+02hi%+02hi%+02hi%+02hi",
+		guidptr[10], guidptr[11], guidptr[12], guidptr[13], guidptr[14], guidptr[15]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	if (prthex)
+		{
+		prtstr("\r\n  [");
+		for (index = 0; index < 16; index++)
+			{
+			chars = decode(txtout, sizeof(txtout), "%+02hi ", guidptr[index]);
+      			txtout[chars] = 0;
+       			prtstr(txtout);
+			}
+		prtstr("\b]");
+		}
+	}
+
+/* print GPT entry */
+void prtgptent(unsigned int entryno)
+	{
+	int chars;
+	int index;
+	int entryidx;
+	int hasname;
+	unsigned int block;
+	unsigned char *rxdata;
+	unsigned char *entryptr;
+	unsigned char tstzero = 0;
+	unsigned long flba;
+	unsigned long llba;
+
+	block = 2 + (entryno / 4);
+	if (blockno != block)
+		{
+		blockno = block;
+		if (!sdread(NO))
+			{
+			prtstr("Can't read GPT entry block\r\n");
+			return;
+			}
+		}
+	rxdata = dataptr;
+	entryptr = rxdata + (128 * (entryno % 4));
+	for (index = 0; index < 16; index++)
+		tstzero |= entryptr[index];
+	if (!tstzero)
+		{
+		return;
+		}
+	else
+		{
+		chars = decode(txtout, sizeof(txtout), "GPT partition entry: %ui\r\n", entryno + 1);
+		txtout[chars] = 0;
+		prtstr(txtout);
+		}
+	prtstr("  Partition type GUID: ");
+	prtguid(entryptr);
+	prtstr("\r\n  Unique partition GUID: ");
+	prtguid(entryptr + 16);
+	prtstr("\r\n  First LBA: ");
+	/* lower 32 bits of LBA should be sufficient (I hope) */
+	flba = (unsigned long)entryptr[32] + ((unsigned long)entryptr[33] << 8) +
+		((unsigned long)entryptr[34] << 16) + ((unsigned long)entryptr[35] << 24);
+	chars = decode(txtout, sizeof(txtout), "%ul", flba);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	if (prthex)
+		{
+		prtstr(" [");
+		for (index = 32; index < (32 + 8); index++)
+			{
+			chars = decode(txtout, sizeof(txtout), "%+02hi ", entryptr[index]);
+	      		txtout[chars] = 0;
+	       		prtstr(txtout);
+			}
+		prtstr("\b]");
+		}
+	prtstr("\r\n  Last LBA: ");
+	/* lower 32 bits of LBA should be sufficient (I hope) */
+	llba = (unsigned long)entryptr[40] + ((unsigned long)entryptr[41] << 8) +
+		((unsigned long)entryptr[42] << 16) + ((unsigned long)entryptr[43] << 24);
+	chars = decode(txtout, sizeof(txtout), "%ul, size %ul MByte", llba, (llba - flba) >> 11);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	if (prthex)
+		{
+		prtstr(" [");
+		for (index = 40; index < (40 + 8); index++)
+			{
+			chars = decode(txtout, sizeof(txtout), "%+02hi ", entryptr[index]);
+	      		txtout[chars] = 0;
+	       		prtstr(txtout);
+			}
+		prtstr("\b]");
+		}
+	prtstr("\r\n  Attribute flags: [");
+	/* bits 0 - 2 and 60 - 63 should be decoded */
+	for (index = 0; index < 8; index++)
+		{
+		entryidx = index + 48;
+		chars = decode(txtout, sizeof(txtout), "%+02hi ", entryptr[entryidx]);
+      		txtout[chars] = 0;
+       		prtstr(txtout);
+		}
+	prtstr("\b]\r\n  Partition name:  ");
+	/* partition name is in UTF-16LE code units */
+	hasname = NO;
+	for (index = 0; index < 72; index += 2)
+		{
+		entryidx = index + 56;
+		if ((entryptr[entryidx] | entryptr[entryidx + 1]) == 0)
+			break;
+		if ((' ' <= entryptr[entryidx]) && (entryptr[entryidx] < 127))
+			putc(entryptr[entryidx]);
+		else
+			putc('.');
+		hasname = YES;
+		}
+	if (!hasname)
+		prtstr("name field empty");
+	prtstr("\r\n");
+	if (prthex)
+		{
+		prtstr("   [");
+		entryidx = index + 56;
+		for (index = 0; index < 72; index++)
+			{
+			if (((index & 0xf) == 0) && (index != 0)) 
+				prtstr("\r\n    ");
+			chars = decode(txtout, sizeof(txtout), "%+02hi ", entryptr[entryidx]);
+	      		txtout[chars] = 0;
+       			prtstr(txtout);
+			}
+		prtstr("\b]\r\n");
+		}
+	}
+
+/* print GPT header */
+void prtgpthdr(unsigned long block)
+	{
+	int chars;
+	int index;
+	unsigned int partno;
+	unsigned char *rxdata;
+	unsigned long entries;
+
+	prtstr("GPT header\r\n");
+	blockno = block;
+	if (!sdread(NO))
+		{
+		prtstr("Can't read GPT partition table header\r\n");
+		return;
+		}
+	rxdata = dataptr;
+	chars = decode(txtout, sizeof(txtout), "  Signature: %b\r\n", &rxdata[0], 8);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout),
+		"  Revision: %i.%i (%+02hi %+02hi %+02hi %+02hi)\r\n",
+		 (int)rxdata[8] * ((int)rxdata[9] << 8),
+		 (int)rxdata[10] + ((int)rxdata[11] << 8),
+		 rxdata[8], rxdata[9], rxdata[10], rxdata[11]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	entries = (unsigned long)rxdata[80] + ((unsigned long)rxdata[81] << 8) +
+		  ((unsigned long)rxdata[82] << 16) + ((unsigned long)rxdata[83] << 24);
+	chars = decode(txtout, sizeof(txtout),
+		 "  Number of partition entries: %ul (may be actual or maximum)\r\n", entries);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	if (prthex)
+		{
+		prtstr("First 128 bytes of GTP header\r\n   [");
+		for (index = 0; index < 128; index++)
+			{
+			if (((index & 0xf) == 0) && (index != 0)) 
+				prtstr("\r\n    ");
+			chars = decode(txtout, sizeof(txtout), "%+02hi ", rxdata[index]);
+	      		txtout[chars] = 0;
+       			prtstr(txtout);
+			}
+		prtstr("\b]\r\n");
+		}
+	for (partno = 0; partno < 16; partno++)
+		{
+		prtgptent(partno);
+		}
+	prtstr("First 16 GPT entries scanned\r\n");
+	}
+
+/* print MBR partition entry */
+void prtmbrpart(unsigned char *partptr)
+	{
+	int chars;
+	unsigned long lbastart;
+	unsigned long lbasize;
+
+	if ((blockno != 0) || !rxtxptr)
+		{
+		blockno = 0;
+		if (!sdread(NO))
+			{
+			prtstr("Can't read MBR sector\r\n");
+			return;
+			}
+		}
+	if (!partptr[4])
+		{
+		prtstr("Unused partition entry (partition type = 0x00)\r\n");
+		return;
+		}
+	chars = decode(txtout, sizeof(txtout),
+	 "boot indicator: 0x%+02hi, partition type: 0x%+02hi\r\n",
+	  partptr[0], partptr[4]);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout),
+	  "  begin CHS: 0x%+02hi-0x%+02hi-0x%+02hi (cyl: %i, head: %i sector: %i)\r\n",
+	  partptr[1], partptr[2], partptr[3],
+	  ((partptr[2] & 0xc0) >> 2) + partptr[3],
+	  partptr[1],
+	  partptr[2] & 0x3f);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout),
+	  "  end CHS 0x%+02hi-0x%+02hi-0x%+02hi (cyl: %i, head: %i sector: %i)\r\n",
+	  partptr[5], partptr[6], partptr[7],
+	  ((partptr[6] & 0xc0) >> 2) + partptr[7],
+	  partptr[5],
+	  partptr[6] & 0x3f);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	lbastart = (unsigned long)partptr[8] +
+	  ((unsigned long)partptr[9] << 8) +
+	  ((unsigned long)partptr[10] << 16) +
+	  ((unsigned long)partptr[11] << 24);
+	chars = decode(txtout, sizeof(txtout),
+	 "  partition start LBA: %ul (0x%+08hl)\r\n", lbastart, lbastart);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	lbasize = (unsigned long)partptr[12] +
+	  ((unsigned long)partptr[13] << 8) +
+	  ((unsigned long)partptr[14] << 16) +
+	  ((unsigned long)partptr[15] << 24);
+	chars = decode(txtout, sizeof(txtout),
+	 "  partition size LBA: %ul (0x%+08hl), %ul MByte\r\n", lbasize, lbasize, lbasize >> 11);
+	txtout[chars] = 0;
+	prtstr(txtout);
+
+	if (partptr[4] == 0xee)
+		prtgpthdr(lbastart);
+	}
+
+/* print partition layout */
+void sdprtpart()
+	{
+	unsigned char *rxdata;
+
+	prtstr("Read MBR\r\n");
+	if ((blockno != 0) || !rxtxptr)
+		{
+		blockno = 0;
+		if (!sdread(NO))
+			{
+			prtstr("Can't read MBR sector\r\n");
+			return;
+			}
+		}
+	rxdata = dataptr;
+	if (!((rxdata[0x1fe] == 0x55) && (rxdata[0x1ff] == 0xaa)))
+		{
+		prtstr("No MBR signature found\r\n");
+		return;
+		}
+
+	/* print MBR partition entries */
+	prtstr("MBR partition 1: ");
+	prtmbrpart(&rxdata[0x01be]);
+	prtstr("MBR partition 2: ");
+	prtmbrpart(&rxdata[0x01ce]);
+	prtstr("MBR partition 3: ");
+	prtmbrpart(&rxdata[0x01de]);
+	prtstr("MBR partition 4: ");
+	prtmbrpart(&rxdata[0x01ee]);
 	}
 
 /* Test init, read and write on SD card over the SPI interface
@@ -873,28 +1156,39 @@ int main()
 		switch (cmdin)
 			{
 			case 'h':
+				prtstr(" h - help\r\n");
 				prtstr(SDTSTVER);
 				prtstr(builddate);
-				prtstr("\r\n");
-				prtstr("Commands:\r\n");
+				prtstr("\r\nCommands:\r\n");
 				prtstr("  h - help\r\n");
-				prtstr("  d - byte level debug on\r\n");
-				prtstr("  o - byte level debug off\r\n");
+				prtstr("  d - byte level debug print on\r\n");
+				prtstr("  o - byte level debug print off\r\n");
 				prtstr("  i - initialize\r\n");
 				prtstr("  n - set/show block #N to read/write\r\n");
 				prtstr("  r - read block #N\r\n");
 				prtstr("  w - write block #N\r\n");
 				prtstr("  p - print block last read or written\r\n");
 				prtstr("  s - print SD registers\r\n");
+				prtstr("  l - print partition layout\r\n");
+				prtstr("  x - print \"raw\" hex fields on\r\n");
+				prtstr("  y - print \"raw\" hex fields off\r\n");
 				prtstr("  Ctrl-C to reload monitor.\r\n");
 				break;
 			case 'd':
 				debugflg = YES;
-				prtstr(" d - debug on\r\n");
+				prtstr(" d - byte debug on\r\n");
 				break;
 			case 'o':
 				debugflg = NO;
-				prtstr(" o - debug off\r\n");
+				prtstr(" o - byte debug off\r\n");
+				break;
+			case 'x':
+				prthex = YES;
+				prtstr(" x - hex debug on\r\n");
+				break;
+			case 'y':
+				prthex = NO;
+				prtstr(" y - hex debug off\r\n");
 				break;
 			case 'i':
 				prtstr(" i - initialize SD card\r\n");
@@ -916,7 +1210,7 @@ int main()
 				break;
 			case 'r':
 				prtstr(" r - read block\r\n");
-				sdread();
+				sdread(YES);
 				break;
 			case 'w':
 				prtstr(" w - write block\r\n");
@@ -929,6 +1223,10 @@ int main()
 			case 's':
 				prtstr(" s - print SD registers\r\n");
 				sdprtreg();
+				break;
+			case 'l':
+				prtstr(" l - print partition layout\r\n");
+				sdprtpart();
 				break;
 			case 0x03: /* Ctrl-C */
 				prtstr("reloading monitor from EPROM\r\n");

@@ -31,7 +31,10 @@
 #include "z80computer.h"
 #include "builddate.h"
 
-#define SDTSTVER "\r\nsdcardtst version 1.5, "
+#define SDTSTVER "\r\nsdcardtst version 1.8, "
+
+unsigned char rxbuf[520] = {0};
+unsigned char statbuf[30] = {0};
 
 unsigned char ocrreg[4] = {0};
 unsigned char cidreg[16] = {0};
@@ -272,6 +275,8 @@ unsigned char *sdcommand(unsigned char *sndbuf, int sndbytes, unsigned char *rec
 				}
 			}
 		}
+	if (debugflg)
+		prtstr("\r\n");
 	return (retptr);
 	}
 
@@ -286,9 +291,6 @@ unsigned char cmd16[] = {0xff, 0xff, 0x50, 0x00, 0x00, 0x02, 0x00, 0x15};
 unsigned char cmd55[] = {0xff, 0xff, 0x77, 0x00, 0x00, 0x00, 0x00, 0x65};
 unsigned char cmd58[] = {0xff, 0xff, 0x7a, 0x00, 0x00, 0x00, 0x00, 0xfd};
 unsigned char acmd41[] = {0xff, 0xff, 0x69, 0x40, 0x00, 0x01, 0xaa, 0x33};
-
-unsigned char rxbuf[520] = {0};
-unsigned char statbuf[20] = {0};
 
 /* initialise SD card interface */
 void sdinit()
@@ -305,7 +307,7 @@ void sdinit()
 	spideselect();
 
 	statptr = sdcommand(0, 0, rxbuf, 8);
-	prtstr("Sent 8 clock pulses\r\n");
+	prtstr("Sent 8 bytes with clock pulses, select not active\r\n");
 
 	spiselect();
 
@@ -388,7 +390,7 @@ void sdinit()
 
 	/* CMD10: SEND_CID */
 	cmd10[7] = CRC7_buf(&cmd10[2], 5) | 0x01;
-	statptr = sdcommand(cmd10, sizeof cmd10, rxbuf, 20);
+	statptr = sdcommand(cmd10, sizeof cmd10, rxbuf, 30);
 	chars = decode(txtout, sizeof(txtout),
 		"CMD10: SEND_CID, R1 response [%+02hi]\r\n", statptr[0]);
 	txtout[chars] = 0;
@@ -425,7 +427,7 @@ void sdinit()
 
 	/* CMD9: SEND_CSD */
 	cmd9[7] = CRC7_buf(&cmd9[2], 5) | 0x01;
-	statptr = sdcommand(cmd9, sizeof cmd9, rxbuf, 20);
+	statptr = sdcommand(cmd9, sizeof cmd9, rxbuf, 30);
 	chars = decode(txtout, sizeof(txtout),
 		"CMD9: SEND_CSD, R1 response [%+02hi]\r\n", statptr[0]);
 	txtout[chars] = 0;
@@ -461,6 +463,10 @@ void sdinit()
 		}
 
 	ready = YES;
+
+	statptr = sdcommand(0, 0, rxbuf, 16);
+	prtstr("Sent 16 bytes of clock pulses, select active\r\n");
+
 	spideselect();
 	ledoff();
 
@@ -480,6 +486,8 @@ int sdread(int printit)
 	int rxbytes;
 	int tries;
 	unsigned long blktoread;
+	unsigned int rxcrc16;
+	unsigned int calcrc16;
 
 	ledon();
 	spiselect();
@@ -504,16 +512,11 @@ int sdread(int printit)
 	cmd17[3] = blktoread & 0xff;
 	blktoread = blktoread >> 8;
 
+	cmd17[7] = CRC7_buf(&cmd17[2], 5) | 0x01;
 	statptr = sdcommand(cmd17, sizeof cmd17, rxbuf, 530);
 	if (printit)
 		{
-		chars = decode(txtout, sizeof(txtout), "CMD17 R1 response 0x%+02hi\r\n", statptr[0]);
-		txtout[chars] = 0;
-		prtstr(txtout);
-		chars = decode(txtout, sizeof(txtout),
-			"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-			/* bit 0 of last byte is always 1 (end bit) */
-			cmd17[7], CRC7_buf(&cmd17[2], 5) | 0x01);
+		chars = decode(txtout, sizeof(txtout), "CMD17 R1 response [%+02hi]\r\n", statptr[0]);
 		txtout[chars] = 0;
 		prtstr(txtout);
 		}
@@ -553,17 +556,21 @@ int sdread(int printit)
 		dataptr = statptr + 1;
 		rxdata = dataptr;
 		rxtxptr = dataptr;
-		if (printit)
+
+		rxcrc16 = (rxdata[0x200] << 8) + rxdata[0x201];
+		calcrc16 = CRC16_buf(rxdata, 512);
+		if (printit || (rxcrc16 != calcrc16))
 			{
 			chars = decode(txtout, sizeof(txtout), "Data block %ul:\r\n", blockno);
 			txtout[chars] = 0;
 			prtstr(txtout);
-			chars = decode(txtout, sizeof(txtout),
-				"  Recieved CRC16: 0x%+04hi, calc: 0x%+04hi\r\n",
-				(rxdata[0x200] << 8) + rxdata[0x201], 
-				CRC16_buf(rxdata, 512));
-		       	txtout[chars] = 0;
-			prtstr(txtout);
+			if (rxcrc16 != calcrc16)
+				{
+				chars = decode(txtout, sizeof(txtout),
+					"  CRC error, recieved CRC16: 0x%+04hi, calc: 0x%+04hi\r\n", rxcrc16, calcrc16);
+			       	txtout[chars] = 0;
+				prtstr(txtout);
+				}
 			}
 		}
 
@@ -583,6 +590,7 @@ void sdwrite()
 	int chars;
 	int prtline;
 	int txbytes;
+	unsigned int crc16tx;
 	unsigned long blktoread;
 
 	ledon();
@@ -608,14 +616,9 @@ void sdwrite()
 	cmd24[3] = blktoread & 0xff;
 	blktoread = blktoread >> 8;
 
+	cmd24[7] = CRC7_buf(&cmd24[2], 5) | 0x01;
 	statptr = sdcommand(cmd24, sizeof cmd24, statbuf, 8);
-	chars = decode(txtout, sizeof(txtout), "CMD24 R1 response 0x%+02hi\r\n", statptr[0]);
-	txtout[chars] = 0;
-	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-		"  CRC7 sent: 0x%+02hi, calc: 0x%+02hi\r\n",
-		/* bit 0 of last byte is always 1 (end bit) */
-		cmd24[7], CRC7_buf(&cmd24[2], 5) | 0x01);
+	chars = decode(txtout, sizeof(txtout), "CMD24 R1 response [%+02hi]\r\n", statptr[0]);
 	txtout[chars] = 0;
 	prtstr(txtout);
 	dataptr = rxtxptr;
@@ -623,22 +626,21 @@ void sdwrite()
 	chars = decode(txtout, sizeof(txtout), "Data block %ul:\r\n", blockno);
 	txtout[chars] = 0;
 	prtstr(txtout);
-	/* send data */
+	/* send data after adding start flag and CRC16 */
+	crc16tx = CRC16_buf(txdata, 512);
+	txdata[-1] = 0xfe;
+	txdata[0x200] = (crc16tx >>  8) & 0xff;
+	txdata[0x201] = crc16tx & 0xff;
 	sdcommand(txdata - 1, 512 + 3, statbuf, 8);
 	/* check data resp. */
 	for (statptr = statbuf; (*statptr & 0x11) != 0x01; statptr++)
 		;
-	chars = decode(txtout, sizeof(txtout), "Data response 0x%+02hi, ", 0x1f & statptr[0]);
+	chars = decode(txtout, sizeof(txtout), "Data response [%+02hi]", 0x1f & statptr[0]);
 	txtout[chars] = 0;
 	prtstr(txtout);
 	if ((0x1f & statptr[0]) == 0x05)
-		prtstr("data accepted");
-	chars = decode(txtout, sizeof(txtout),
-		"\r\n  Transmitted CRC16: 0x%+04hi, calc: 0x%+04hi\r\n",
-		(txdata[0x200] << 8) + txdata[0x201], 
-		CRC16_buf(txdata, 512));
-       	txtout[chars] = 0;
-	prtstr(txtout);
+		prtstr(", data accepted");
+	prtstr("\r\n");
 
 	spideselect();
 	ledoff();
@@ -712,12 +714,6 @@ void sddatprt()
 		dataptr += 16;
 		lastallz = allzero;
 		}
-	chars = decode(txtout, sizeof(txtout),
-		"  Recieved CRC16: 0x%+04hi, calc: 0x%+04hi\r\n",
-		(rxdata[0x200] << 8) + rxdata[0x201], 
-		CRC16_buf(rxdata, 512));
-       	txtout[chars] = 0;
-	prtstr(txtout);
 	}
 
 /* print OCR, CID and CSD registers*/
@@ -882,7 +878,7 @@ void prtgptent(unsigned int entryno)
 	unsigned long llba;
 
 	block = 2 + (entryno / 4);
-	if (blockno != block)
+	if ((blockno != block) || YES /*!rxtxptr*/)
 		{
 		blockno = block;
 		if (!sdread(NO))
@@ -1008,7 +1004,7 @@ void prtgpthdr(unsigned long block)
 	txtout[chars] = 0;
 	prtstr(txtout);
 	chars = decode(txtout, sizeof(txtout),
-		"  Revision: %i.%i (%+02hi %+02hi %+02hi %+02hi)\r\n",
+		"  Revision: %i.%i [%+02hi %+02hi %+02hi %+02hi]\r\n",
 		 (int)rxdata[8] * ((int)rxdata[9] << 8),
 		 (int)rxdata[10] + ((int)rxdata[11] << 8),
 		 rxdata[8], rxdata[9], rxdata[10], rxdata[11]);
@@ -1044,10 +1040,12 @@ void prtgpthdr(unsigned long block)
 void prtmbrpart(unsigned char *partptr)
 	{
 	int chars;
+	int index;
 	unsigned long lbastart;
 	unsigned long lbasize;
 
-	if ((blockno != 0) || !rxtxptr)
+
+	if ((blockno != 0) || YES /*!rxtxptr*/)
 		{
 		blockno = 0;
 		if (!sdread(NO))
@@ -1058,46 +1056,73 @@ void prtmbrpart(unsigned char *partptr)
 		}
 	if (!partptr[4])
 		{
-		prtstr("Unused partition entry (partition type = 0x00)\r\n");
+		prtstr("Not used entry\r\n");
 		return;
 		}
 	chars = decode(txtout, sizeof(txtout),
-	 "boot indicator: 0x%+02hi, partition type: 0x%+02hi\r\n",
+	 "boot indicator: 0x%+02hi, System ID: 0x%+02hi\r\n",
 	  partptr[0], partptr[4]);
 	txtout[chars] = 0;
 	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-	  "  begin CHS: 0x%+02hi-0x%+02hi-0x%+02hi (cyl: %i, head: %i sector: %i)\r\n",
-	  partptr[1], partptr[2], partptr[3],
-	  ((partptr[2] & 0xc0) >> 2) + partptr[3],
-	  partptr[1],
-	  partptr[2] & 0x3f);
-	txtout[chars] = 0;
-	prtstr(txtout);
-	chars = decode(txtout, sizeof(txtout),
-	  "  end CHS 0x%+02hi-0x%+02hi-0x%+02hi (cyl: %i, head: %i sector: %i)\r\n",
-	  partptr[5], partptr[6], partptr[7],
-	  ((partptr[6] & 0xc0) >> 2) + partptr[7],
-	  partptr[5],
-	  partptr[6] & 0x3f);
-	txtout[chars] = 0;
-	prtstr(txtout);
+	if ((partptr[4] == 0x05) || (partptr[4] == 0x0f))
+		{
+		prtstr("  Extended partition\r\n");
+		/* should probably decode this also */
+		}
+	if (partptr[0] & 0x01)
+		{
+		prtstr("  unofficial 48 bit LBA Proposed MBR Format, no CHS\r\n");
+		/* this is however discussed
+		   https://wiki.osdev.org/Partition_Table#.22Unofficial.22_48_bit_LBA_Proposed_MBR_Format
+		*/
+		}
+	else
+		{
+		chars = decode(txtout, sizeof(txtout),
+		  "  begin CHS: 0x%+02hi-0x%+02hi-0x%+02hi (cyl: %i, head: %i sector: %i)\r\n",
+		  partptr[1], partptr[2], partptr[3],
+		  ((partptr[2] & 0xc0) >> 2) + partptr[3],
+		  partptr[1],
+		  partptr[2] & 0x3f);
+		txtout[chars] = 0;
+		prtstr(txtout);
+		chars = decode(txtout, sizeof(txtout),
+		  "  end CHS 0x%+02hi-0x%+02hi-0x%+02hi (cyl: %i, head: %i sector: %i)\r\n",
+		  partptr[5], partptr[6], partptr[7],
+		  ((partptr[6] & 0xc0) >> 2) + partptr[7],
+		  partptr[5],
+		  partptr[6] & 0x3f);
+		txtout[chars] = 0;
+		prtstr(txtout);
+		}
+	/* not showing high 16 bits if 48 bit LBA */
 	lbastart = (unsigned long)partptr[8] +
 	  ((unsigned long)partptr[9] << 8) +
 	  ((unsigned long)partptr[10] << 16) +
 	  ((unsigned long)partptr[11] << 24);
-	chars = decode(txtout, sizeof(txtout),
-	 "  partition start LBA: %ul (0x%+08hl)\r\n", lbastart, lbastart);
-	txtout[chars] = 0;
-	prtstr(txtout);
 	lbasize = (unsigned long)partptr[12] +
 	  ((unsigned long)partptr[13] << 8) +
 	  ((unsigned long)partptr[14] << 16) +
 	  ((unsigned long)partptr[15] << 24);
 	chars = decode(txtout, sizeof(txtout),
-	 "  partition size LBA: %ul (0x%+08hl), %ul MByte\r\n", lbasize, lbasize, lbasize >> 11);
+	 "  partition start LBA: %ul [%+08hl]\r\n", lbastart, lbastart);
 	txtout[chars] = 0;
 	prtstr(txtout);
+	chars = decode(txtout, sizeof(txtout),
+	 "  partition size LBA: %ul [%+08hl], %ul MByte\r\n", lbasize, lbasize, lbasize >> 11);
+	txtout[chars] = 0;
+	prtstr(txtout);
+	if (prthex)
+		{
+		prtstr("  [");
+		for (index = 0; index < 16; index++)
+			{
+			chars = decode(txtout, sizeof(txtout), "%+02hi ", partptr[index]);
+      			txtout[chars] = 0;
+       			prtstr(txtout);
+			}
+		prtstr("\b]\r\n");
+		}
 
 	if (partptr[4] == 0xee)
 		prtgpthdr(lbastart);
@@ -1109,7 +1134,13 @@ void sdprtpart()
 	unsigned char *rxdata;
 
 	prtstr("Read MBR\r\n");
-	if ((blockno != 0) || !rxtxptr)
+	blockno = 0;
+	if (!sdread(NO))
+		{
+		prtstr("Can't read MBR sector\r\n");
+		return;
+		}
+	if ((blockno != 0) || YES /*!rxtxptr*/)
 		{
 		blockno = 0;
 		if (!sdread(NO))

@@ -1,0 +1,556 @@
+
+
+
+			============================
+			|                          |
+			|      MAP INFORMATION     |
+			|                          |
+			============================
+
+
+
+			============================
+			|                          |
+			|         SEGMENTS         |
+			|                          |
+			============================
+
+
+
+			Segment No. 1	Type: text
+			=============
+
+        start: 0x0000         size: 0x4293         finish: 0x4293
+
+			Segment No. 2	Type: data
+			=============
+
+        start: 0x4293         size: 0x1069         finish: 0x52FC
+
+			Segment No. 3	Type: bss
+			=============
+
+        start: 0x52FC         size: 0x0258         finish: 0x5554
+
+			Segment No. 4	Type: stack
+			=============
+
+        start: 0x52FC         size: 0x0000         finish: 0x52FC
+
+
+
+
+			============================
+			|                          |
+			|         MODULES          |
+			|                          |
+			============================
+
+
+
+MODULE: Crts.o
+		TEXT  at 0x0000 size: 0x0069 
+		DATA  at 0x4293 size: 0x0001 
+		BSS   at 0x52FC size: 0x0000 
+
+MODULE: z80lolevio.o
+		TEXT  at 0x0069 size: 0x00B8 
+		DATA  at 0x4294 size: 0x0000 
+		BSS   at 0x52FC size: 0x0000 
+
+MODULE: z80cio.o
+		TEXT  at 0x0121 size: 0x0124 
+		DATA  at 0x4294 size: 0x0004 
+		BSS   at 0x52FC size: 0x0000 
+
+MODULE: z80sdtst.o
+		TEXT  at 0x0245 size: 0x21D1 
+		DATA  at 0x4298 size: 0x0FE8 
+		BSS   at 0x52FC size: 0x0258 
+
+MODULE: printf.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x2416 size: 0x006B 
+		DATA  at 0x5280 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: puts.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x2481 size: 0x004C 
+		DATA  at 0x5280 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: sscanf.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x24CD size: 0x001E 
+		DATA  at 0x5280 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: memcpy.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x24EB size: 0x0018 
+		DATA  at 0x5280 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: cprint.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x2503 size: 0x0A6D 
+		DATA  at 0x5280 size: 0x0013 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: cscan.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x2F70 size: 0x09CF 
+		DATA  at 0x5293 size: 0x0030 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: itob.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x393F size: 0x028C 
+		DATA  at 0x52C3 size: 0x0025 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: isdig.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x3BCB size: 0x000C 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: isspac.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x3BD7 size: 0x0010 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: memchr.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x3BE7 size: 0x0015 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: strchr.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x3BFC size: 0x0013 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: strlen.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x3C0F size: 0x000B 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: toupper.o(/opt/wsl/lib/z80/libi.z80)
+		TEXT  at 0x3C1A size: 0x000D 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: fmvl.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3C27 size: 0x001B 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: ibc.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3C42 size: 0x0002 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: idiv.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3C44 size: 0x009E 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: ilsh.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3CE2 size: 0x006F 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: imulz80.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3D51 size: 0x002F 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: jtab.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3D80 size: 0x00DB 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: ladd.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3E5B size: 0x002B 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: land.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3E86 size: 0x0023 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: lclt.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3EA9 size: 0x0029 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: lcmp.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3ED2 size: 0x002A 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: ldiv.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x3EFC size: 0x0195 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: llsh.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x4091 size: 0x008C 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: lmulz80.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x411D size: 0x0096 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: lneg.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x41B3 size: 0x0021 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: lsub.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x41D4 size: 0x002C 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: mvl.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x4200 size: 0x001C 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: sav.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x421C size: 0x002C 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: savs.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x4248 size: 0x0015 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: savs0.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x425D size: 0x000F 
+		DATA  at 0x52E8 size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: cregs.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x426C size: 0x0000 
+		DATA  at 0x52E8 size: 0x0014 
+		BSS   at 0x5554 size: 0x0000 
+
+MODULE: zret.o(/opt/wsl/lib/z80/libm.z80)
+		TEXT  at 0x426C size: 0x0027 
+		DATA  at 0x52FC size: 0x0000 
+		BSS   at 0x5554 size: 0x0000 
+
+
+
+
+			============================
+			|                          |
+			|          SYMBOLS         |
+			|                          |
+			============================
+
+
+
+_in PUBLIC  at 0x00F9 in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: z80cio.o
+_out PUBLIC  at 0x010A in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: z80cio.o
+c.r0 PUBLIC  at 0x52E8 in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: fmvl.o(/opt/wsl/lib/z80/libm.z80) itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80)
+	              z80sdtst.o
+c.r1 PUBLIC  at 0x52F0 in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: fmvl.o(/opt/wsl/lib/z80/libm.z80) itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80)
+	              z80sdtst.o
+c.r2 PUBLIC  at 0x52F8 in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: sav.o(/opt/wsl/lib/z80/libm.z80) itob.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80)
+	              printf.o(/opt/wsl/lib/z80/libi.z80)
+c.r3 PUBLIC  at 0x52FA in data section  of Segment No. 2
+	defined in:    cregs.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: sav.o(/opt/wsl/lib/z80/libm.z80) cprint.o(/opt/wsl/lib/z80/libi.z80)
+__bss PUBLIC  at 0x52FC in bss  section  of Segment No. 3
+	defined in:    Crts.o
+__svc PUBLIC  at 0x011E in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+_cmd0 PUBLIC  at 0x42DF in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd8 PUBLIC  at 0x42E7 in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd9 PUBLIC  at 0x42EF in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_exit PUBLIC  at 0x0022 in text section  of Segment No. 1
+	defined in:    Crts.o
+_main PUBLIC  at 0x228D in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+	referenced in: Crts.o
+_puts PUBLIC  at 0x2481 in text section  of Segment No. 1
+	defined in:    puts.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: z80cio.o
+c.ibc PUBLIC  at 0x3C42 in text section  of Segment No. 1
+	defined in:    ibc.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cprint.o(/opt/wsl/lib/z80/libi.z80)
+c.ihl PUBLIC  at 0x4255 in text section  of Segment No. 1
+	defined in:    savs.o(/opt/wsl/lib/z80/libm.z80)
+c.mvl PUBLIC  at 0x4200 in text section  of Segment No. 1
+	defined in:    mvl.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.ret PUBLIC  at 0x4233 in text section  of Segment No. 1
+	defined in:    sav.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80)
+	              printf.o(/opt/wsl/lib/z80/libi.z80)
+c.sav PUBLIC  at 0x421C in text section  of Segment No. 1
+	defined in:    sav.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80)
+	              printf.o(/opt/wsl/lib/z80/libi.z80)
+__data PUBLIC  at 0x4293 in data section  of Segment No. 2
+	defined in:    Crts.o
+__itob PUBLIC  at 0x393F in text section  of Segment No. 1
+	defined in:    itob.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cprint.o(/opt/wsl/lib/z80/libi.z80)
+__ltob PUBLIC  at 0x3A5C in text section  of Segment No. 1
+	defined in:    itob.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cprint.o(/opt/wsl/lib/z80/libi.z80)
+__ltor PUBLIC  at 0x011E in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+__scan PUBLIC  at 0x2FE5 in text section  of Segment No. 1
+	defined in:    cscan.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: sscanf.o(/opt/wsl/lib/z80/libi.z80)
+__text PUBLIC  at 0x0000 in text section  of Segment No. 1
+	defined in:    Crts.o
+_cmd10 PUBLIC  at 0x42F7 in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd16 PUBLIC  at 0x42FF in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd17 PUBLIC  at 0x457D in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd24 PUBLIC  at 0x4636 in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd55 PUBLIC  at 0x4307 in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cmd58 PUBLIC  at 0x430F in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_ledon PUBLIC  at 0x022D in text section  of Segment No. 1
+	defined in:    z80cio.o
+	referenced in: z80sdtst.o
+_ready PUBLIC  at 0x5548 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_rxbuf PUBLIC  at 0x52FC in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_spiio PUBLIC  at 0x00CC in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: z80sdtst.o
+c.0mvf PUBLIC  at 0x3C34 in text section  of Segment No. 1
+	defined in:    fmvl.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.1mvf PUBLIC  at 0x3C27 in text section  of Segment No. 1
+	defined in:    fmvl.o(/opt/wsl/lib/z80/libm.z80)
+c.fmvl PUBLIC  at 0x3C2E in text section  of Segment No. 1
+	defined in:    fmvl.o(/opt/wsl/lib/z80/libm.z80)
+c.idiv PUBLIC  at 0x3C44 in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.z80)
+c.ilsh PUBLIC  at 0x3CE2 in text section  of Segment No. 1
+	defined in:    ilsh.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.imod PUBLIC  at 0x3C6A in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.z80)
+c.imul PUBLIC  at 0x3D51 in text section  of Segment No. 1
+	defined in:    imulz80.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.irsh PUBLIC  at 0x3D02 in text section  of Segment No. 1
+	defined in:    ilsh.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.jtab PUBLIC  at 0x3D80 in text section  of Segment No. 1
+	defined in:    jtab.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cprint.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.ladd PUBLIC  at 0x3E5B in text section  of Segment No. 1
+	defined in:    ladd.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.land PUBLIC  at 0x3E86 in text section  of Segment No. 1
+	defined in:    land.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80)
+c.lclt PUBLIC  at 0x3EA9 in text section  of Segment No. 1
+	defined in:    lclt.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80)
+c.lcmp PUBLIC  at 0x3ED2 in text section  of Segment No. 1
+	defined in:    lcmp.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.ldiv PUBLIC  at 0x3EFC in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.z80)
+c.llsh PUBLIC  at 0x4091 in text section  of Segment No. 1
+	defined in:    llsh.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.lmod PUBLIC  at 0x3F35 in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.z80)
+c.lmul PUBLIC  at 0x411D in text section  of Segment No. 1
+	defined in:    lmulz80.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.lneg PUBLIC  at 0x41B3 in text section  of Segment No. 1
+	defined in:    lneg.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80)
+c.lret PUBLIC  at 0x426C in text section  of Segment No. 1
+	defined in:    zret.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: mvl.o(/opt/wsl/lib/z80/libm.z80) lsub.o(/opt/wsl/lib/z80/libm.z80) lmulz80.o(/opt/wsl/lib/z80/libm.z80)
+	              llsh.o(/opt/wsl/lib/z80/libm.z80) ldiv.o(/opt/wsl/lib/z80/libm.z80) land.o(/opt/wsl/lib/z80/libm.z80)
+	              ladd.o(/opt/wsl/lib/z80/libm.z80) imulz80.o(/opt/wsl/lib/z80/libm.z80) ilsh.o(/opt/wsl/lib/z80/libm.z80)
+	              idiv.o(/opt/wsl/lib/z80/libm.z80)
+c.lrsh PUBLIC  at 0x40BF in text section  of Segment No. 1
+	defined in:    llsh.o(/opt/wsl/lib/z80/libm.z80)
+c.lsub PUBLIC  at 0x41D4 in text section  of Segment No. 1
+	defined in:    lsub.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.rets PUBLIC  at 0x4256 in text section  of Segment No. 1
+	defined in:    savs.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80) sscanf.o(/opt/wsl/lib/z80/libi.z80)
+	              puts.o(/opt/wsl/lib/z80/libi.z80) printf.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+	              z80cio.o z80lolevio.o
+c.savs PUBLIC  at 0x4248 in text section  of Segment No. 1
+	defined in:    savs.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80) sscanf.o(/opt/wsl/lib/z80/libi.z80)
+	              puts.o(/opt/wsl/lib/z80/libi.z80) printf.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+	              z80cio.o z80lolevio.o
+c.udiv PUBLIC  at 0x3C90 in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.umod PUBLIC  at 0x3C98 in text section  of Segment No. 1
+	defined in:    idiv.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+c.ursh PUBLIC  at 0x3D25 in text section  of Segment No. 1
+	defined in:    ilsh.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.zret PUBLIC  at 0x427B in text section  of Segment No. 1
+	defined in:    zret.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: lcmp.o(/opt/wsl/lib/z80/libm.z80) lclt.o(/opt/wsl/lib/z80/libm.z80)
+spinmi PUBLIC  at 0x0069 in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: Crts.o
+__print PUBLIC  at 0x2744 in text section  of Segment No. 1
+	defined in:    cprint.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: printf.o(/opt/wsl/lib/z80/libi.z80)
+_acmd41 PUBLIC  at 0x4317 in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_cidreg PUBLIC  at 0x5526 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_csdreg PUBLIC  at 0x5536 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_ledoff PUBLIC  at 0x0239 in text section  of Segment No. 1
+	defined in:    z80cio.o
+	referenced in: z80sdtst.o
+_memchr PUBLIC  at 0x3BE7 in text section  of Segment No. 1
+	defined in:    memchr.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80)
+_memcpy PUBLIC  at 0x24EB in text section  of Segment No. 1
+	defined in:    memcpy.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: z80sdtst.o
+_ocrreg PUBLIC  at 0x5522 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_printf PUBLIC  at 0x2466 in text section  of Segment No. 1
+	defined in:    printf.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: z80sdtst.o
+_prthex PUBLIC  at 0x554A in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_reload PUBLIC  at 0x011B in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: z80sdtst.o
+_sdinit PUBLIC  at 0x05A5 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_sdread PUBLIC  at 0x0BA3 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_sscanf PUBLIC  at 0x24CD in text section  of Segment No. 1
+	defined in:    sscanf.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: z80sdtst.o
+_strchr PUBLIC  at 0x3BFC in text section  of Segment No. 1
+	defined in:    strchr.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80)
+_strlen PUBLIC  at 0x3C0F in text section  of Segment No. 1
+	defined in:    strlen.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cprint.o(/opt/wsl/lib/z80/libi.z80)
+c.rets0 PUBLIC  at 0x4267 in text section  of Segment No. 1
+	defined in:    savs0.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.savs0 PUBLIC  at 0x425D in text section  of Segment No. 1
+	defined in:    savs0.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+c.uldiv PUBLIC  at 0x3F70 in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80) cscan.o(/opt/wsl/lib/z80/libi.z80)
+c.ulmod PUBLIC  at 0x3FAC in text section  of Segment No. 1
+	defined in:    ldiv.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: itob.o(/opt/wsl/lib/z80/libi.z80)
+c.ulrsh PUBLIC  at 0x40EE in text section  of Segment No. 1
+	defined in:    llsh.o(/opt/wsl/lib/z80/libm.z80)
+	referenced in: z80sdtst.o
+__memory PUBLIC  at 0x5554 in bss  section  of Segment No. 3
+	defined in:    command line
+	referenced in: Crts.o
+__setint PUBLIC  at 0x011E in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+_blkmult PUBLIC  at 0x42AF in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_blockno PUBLIC  at 0x554E in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_dataptr PUBLIC  at 0x5552 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_getchar PUBLIC  at 0x0159 in text section  of Segment No. 1
+	defined in:    z80cio.o
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+_isdigit PUBLIC  at 0x3BCB in text section  of Segment No. 1
+	defined in:    isdig.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80) cprint.o(/opt/wsl/lib/z80/libi.z80)
+_isspace PUBLIC  at 0x3BD7 in text section  of Segment No. 1
+	defined in:    isspac.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cscan.o(/opt/wsl/lib/z80/libi.z80)
+_prtguid PUBLIC  at 0x158E in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_putchar PUBLIC  at 0x0121 in text section  of Segment No. 1
+	defined in:    z80cio.o
+	referenced in: puts.o(/opt/wsl/lib/z80/libi.z80) printf.o(/opt/wsl/lib/z80/libi.z80) z80sdtst.o
+_rxtxptr PUBLIC  at 0x554C in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_sdwrite PUBLIC  at 0x0DE6 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_spiinit PUBLIC  at 0x00A1 in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+_statbuf PUBLIC  at 0x5504 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_toupper PUBLIC  at 0x3C1A in text section  of Segment No. 1
+	defined in:    toupper.o(/opt/wsl/lib/z80/libi.z80)
+	referenced in: cprint.o(/opt/wsl/lib/z80/libi.z80)
+_CRC7_buf PUBLIC  at 0x02A7 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_CRC7_one PUBLIC  at 0x0245 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+__romdata PUBLIC  at 0x4293 in text section  of Segment No. 1
+	defined in:    command line
+_debugflg PUBLIC  at 0x5546 in bss  section  of Segment No. 3
+	defined in:    z80sdtst.o
+_getkline PUBLIC  at 0x016A in text section  of Segment No. 1
+	defined in:    z80cio.o
+	referenced in: z80sdtst.o
+_sddatprt PUBLIC  at 0x0FD0 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_sdprtreg PUBLIC  at 0x1175 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_CRC16_buf PUBLIC  at 0x03A4 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_CRC16_one PUBLIC  at 0x02F6 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_builddate PUBLIC  at 0x4298 in data section  of Segment No. 2
+	defined in:    z80sdtst.o
+_prtgptent PUBLIC  at 0x16E5 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_prtgpthdr PUBLIC  at 0x1B9F in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_sdcommand PUBLIC  at 0x03F7 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_sdprtpart PUBLIC  at 0x2188 in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_spiselect PUBLIC  at 0x00BE in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: z80sdtst.o
+_prtmbrpart PUBLIC  at 0x1DCB in text section  of Segment No. 1
+	defined in:    z80sdtst.o
+_spideselect PUBLIC  at 0x00C5 in text section  of Segment No. 1
+	defined in:    z80lolevio.o
+	referenced in: z80sdtst.o

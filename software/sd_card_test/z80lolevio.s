@@ -1,25 +1,14 @@
 ;
-;   Based on:
-;	SAMPLE STARTUP CODE FOR FREESTANDING SYSTEM
-;	Copyright (c) 1989 by COSMIC (France)
-;
-;   Hacked by Hans-Ake Lund 2021 to work with
-;   Z80 Computer and a NMI based SPI interface
-;   using bit-banging on a PIO port
+;   Hacked together by Hans-Ake Lund 2021 and 2022
+;   to work with Z80 Computer and a NMI based
+;   SPI interface using bit-banging on a PIO port
 ;
 .include "z80computer.inc"
 
-	.external _main
-	.external __memory
-	.external __toram
 	.external c.rets
 	.external c.savs
 
-	.public	_exit
-	.public	__text
-	.public	__data
-	.public	__bss
-
+	.public spinmi
 	.public _spiinit
 	.public _spiselect
 	.public _spideselect
@@ -29,63 +18,9 @@
 	.public	_in
 	.public _reload
 
-	.public __romdata	;seems to be needed although
-				;no romdata copy is done
-
-;
-;	PROGRAM STARTS HERE SINCE THIS FILE IS LINKED FIRST
-;
-;	First we must zero bss if needed
-;
-	.psect	_text
-__text:
-	ld	hl, __memory	; __memory is the end of the bss
-				; it is defined by the link line
-	ld	de, __bss	; __bss is the start of the bss (see below)
-	sub	a
-	sbc	hl, de		; compute size of bss
-	jr	z, bssok	; if zero do nothing
-	ex	de, hl
-loop:
-	ld	(hl), 0		; zero	bss
-	inc	hl
-	dec	de
-	ld	a, e
-	or	d
-	jr	nz, loop	; any more left ???
-bssok:
-;
-;	Then set up stack
-;
-;	The code below sets up an 8K byte stack
-;
-;	after the bss. This code can be modified
-;
-;	to set up stack in any other convenient way
-;
-	ld	bc, __memory	; get end of bss
-	ld	ix, 8192	; ix = 8K
-	add	ix, bc		; ix = end of mem + 8k
-	ld	sp, ix		; init sp
-;
-;
-;	Perform ROM to RAM copy, but not needed in this program
-;
-;
-;	call	__toram
-;
-;
-;	Then call main
-;
-	call	_main
-_exit:				; exit code
-	jr	_exit		; for now loop
-
 ;-------------------------------------------------------
-;	NMI goes here, but first pad to address 0x0066
-nmipad:
-	.byte	0 (066h - (nmipad - __text))
-
+;	NMI with a jump from address 0x0066
+;
 ; The NMI routine handles SPI byte input and output
 ; The alternate registers are set-up by C functions
 ; to send and receive one byte of data
@@ -152,7 +87,6 @@ spiend:
 	ex af,af
 	retn
 ;-------------------------------------------------------
-
 ; SPI C functions to control alternate registers,
 ; PIO B and CTC 2 for byte transfer by the NMI routine
 
@@ -243,7 +177,6 @@ spiiowt2:
 	ld b, 0
 	jp c.rets
 
-
 ; I/O C functions for the Z80 Computer
 ;
 _in:
@@ -263,18 +196,20 @@ _out:
 	jp	c.rets
 
 _reload:
-	jp 0F003H
+	jp 0F003H       ;fixed address in the monitor
 
-	.psect	_data
-__data:
-	.byte	0	; NULL cannot be a valid pointer
+; hack to define routines that are used by olib but really belongs in a CP/M library
+
+	.public	__svc
+	.public	__setint
+	.public __ltor
+
+__svc:
+__setint:
+__ltor:
+hackloop:
+    jp hackloop
 
 
-__romdata:		;needed by libm.80, find out why
-;
-;
-;
-	.psect	_bss
-__bss:			; define start of bss
 	.end
 

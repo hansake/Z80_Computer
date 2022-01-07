@@ -1,8 +1,8 @@
 #	STANDARD ANSI C ENVIRONMENT PROTOTYPE FILE
-#	For Linux
+#	FOR Linux/Windows Cross to z180/z80
 #	Programmable flag options:
 #
-#	64180	: generate code for 64180 instead of Z80
+#	180	: generate code for 180 instead of Z80
 #	dl1	: generate line info dl1 style
 #	dl2	: generate line info dl2 style
 #	far	: far calls on Z80
@@ -14,7 +14,7 @@
 #	nobss	: do not use the bss section
 #	noopt	: do not do optimize assembler code
 #	nostrict: allow more lenient type checking
-#	old     : link in old whitesmiths library routines
+#	old     : link in old Whitesmiths library routines
 #	prom	: move rom to ram on startup
 #	proto	: enable prototype checking
 #	rev	: reorder bits inbitfields from most to least significant
@@ -23,11 +23,12 @@
 #	sp	: enable single precision with double precision
 #	std	: force the output to conform to ANSI C draft standard
 #	strict	: enforce more stronger tye checking
-#	sprec	: generate code for single-precision floating point
+#   sprec	: generate code for single-precision floating point
 #		  double are converted to float
 #	verbose	: display name of C functions as they are processed by the
 #		  code generator
 #	xdebug	: generate debugging info for cxdb
+
 c:(e)cpp80	-o (o) -x {lincl?+lincl} {proto?-d_PROTO} \
 		{std?+std} {listc?-err} \
 		{listcs?-err} -i (h) \
@@ -40,8 +41,12 @@ c:(e)cpp80	-o (o) -x {lincl?+lincl} {proto?-d_PROTO} \
 		{xdebug?+xdebug} {dl1?-dl:{dl2?-dl}} \
 		{sprec?-sp} \
 		(i)
+ {listc?echo \"\#error cp1(V3.32) (r).c\:0\" >> (r).err}
+ {listc?(e)lm -o (r).tmp -err -lt (r).err}
+ {listc?(e)prw -err -t (r).c (r).tmp > (r).lst}
+ {listc?mv (r).err (r).tmp}
 
-2:(e)cp280	-o (o) -x4 {64180?-h64180} {far?-far} \
+2:(e)cp280	-o (o) -x4 {180?-h64180} {far?-far} \
 		{nobss? -bss} {listcs?+list -err} \
 		{dl1?-dl1:{dl2?-dl2}} \
 		{rev?-rev} {sp?-sp} \
@@ -49,14 +54,24 @@ c:(e)cpp80	-o (o) -x {lincl?+lincl} {proto?-d_PROTO} \
 		(i)
 
 3:(e)cp380	-o (o) {noopt?-z} -e -r30 (i)
+        {listcs?(e)lm -o (r).tmp -err -lt -c \";\" (o)}
+        {listcs?cp (r).tmp (o) }
+        {listcs?rm -f (r).tmp }
 
 s:(e)x80	-o (o) {listcs?+l >(r).ls} (i)
 
-o::echo		 -o (o) -h -t -rt -rd -cb > (r).lnk
+o::echo		 -o (o) {prom?+h} > (r).lnk
  echo		{map?+map=(r).map} \
 		+text -b0x0000 \
-		(i) {old?(l)olib.80} >> (r).lnk
- echo		(l)lib{sprec?f:d}.80 (l)libi.80 (l)libm.80 >> (r).lnk
- echo		+def __memory=__bss__  >> (r).lnk
+		{data?+data -b0x8000} \
+		Crts{prom?rom}.o (i) >> (r).lnk
+ echo		{float?(l)lib{sprec?f:d}.{180?1:z}80:} \
+        {old?(l)olib.{180?1:z}80} \
+		(l)libi.{180?1:z}80 \
+ 		(l)libm.{180?1:z}80 >> (r).lnk
+ echo		+def __romdata=__text__ +def __memory=__bss__  >> (r).lnk
  (e)lnk80 < (r).lnk
+ {prom?(e)toprom -o (r).prm (r).80}
+ {prom?mv (r).prm (r).80}
+ {savlnk?:rm	(r).lnk}
 80:

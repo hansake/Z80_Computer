@@ -1,5 +1,5 @@
-# Z80_Computer_board
-A simple Z80 based computer board
+# Z80_Computer
+A simple Z80 based computer board in a plastic box.
 
 The project was started when I began to try to organize my collection of integrated
 circuits and found some Z80 ICs.

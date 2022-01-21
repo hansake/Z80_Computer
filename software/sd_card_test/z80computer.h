@@ -1,10 +1,11 @@
-/* z80computer.h
+/*  z80computer.h
  *
- * Defines hardware for the Z80 Computer
+ *  Defines hardware and related software for the Z80 Computer
  *
  *  You are free to use, modify, and redistribute
  *  this source code. No warranties given.
- *  Hastily Cobbled Together 2021 by Hans-Ake Lund
+ *  Hastily Cobbled Together 2021 and 2022
+ *  by Hans-Ake Lund
  */
 
 /* Port definitions for switching between low EPROM and RAM */
@@ -35,3 +36,8 @@
 /* Port definitions for switching LED off and on */
 #define LEDOFF 0x14
 #define LEDON 0x18
+
+/* Hardware driver routines */
+unsigned char spiio(unsigned char);
+unsigned char in(int);
+void out(int, unsigned char);

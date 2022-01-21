@@ -1,9 +1,21 @@
+; z80aio.s
 ;
-;   Hacked together by Hans-Ake Lund 2021 and 2022
-;   to work with Z80 Computer and a NMI based
-;   SPI interface using bit-banging on a PIO port
+; Assembler input/output routines for the Z80 computer.
+;
+; Hacked together by Hans-Ake Lund 2021 and 2022
+; to work with Z80 Computer and a NMI based
+; SPI interface using bit-banging on a PIO port
+;
+; The SPI interface has the option of not using NMI,
+; the reason for this is that the NMI routine address (66h)
+; is in the middle of the default FCB area for CP/M.
+; NMI driven SPI interface is more suitable for a multi tasking
+; operating system.
 ;
 .include "z80computer.inc"
+
+.define FASTIO = 1 ;set to 1 for faster serial i/o
+.define NMISPI = 0 ;set to 1 for NMI driven SPI interface
 
 	.external c.rets
 	.external c.savs
@@ -20,6 +32,7 @@
 
 ;-------------------------------------------------------
 ;	NMI with a jump from address 0x0066
+;       if NMI driven SPI interface is configured
 ;
 ; The NMI routine handles SPI byte input and output
 ; The alternate registers are set-up by C functions
@@ -34,6 +47,12 @@
 ;       is ongoing and that the C functions
 ;       can not read or write the alternate registers
 spinmi:
+
+.if NMISPI = 0
+	;if not NMI driven, return directly
+	retn
+.endif
+spipolled:
 	ex af,af
 	exx
 	in a, (PIO_B_DATA)	;read input and current outputs
@@ -85,7 +104,12 @@ spiend:
 
 	exx
 	ex af,af
+.if NMISPI
 	retn
+.else
+	ret
+.endif
+
 ;-------------------------------------------------------
 ; SPI C functions to control alternate registers,
 ; PIO B and CTC 2 for byte transfer by the NMI routine
@@ -132,14 +156,14 @@ _spiinit:
 _spiselect:
 	in a, (PIO_B_DATA)
 	and 0f7h		;set /CS (bit 3) low i.e. active
-	out (PIO_B_DATA), a	;indicate that i/o is ongoing
+	out (PIO_B_DATA), a
 	ret
 
 ;void spideselect()
 _spideselect:
 	in a, (PIO_B_DATA)
 	or 008h			;set /CS (bit 3) hign i.e. not active
-	out (PIO_B_DATA), a	;indicate that i/o is ongoing
+	out (PIO_B_DATA), a
 	ret
 
 ;unsigned int spiio(unsigned int), send/receive a byte
@@ -148,7 +172,14 @@ _spiio:
 spiiowt1:
 	in a, (PIO_B_DATA)	;wait until SPI i/o not ongoing
 	bit 7, a
+.if SPINMI
 	jr nz, spiiowt1
+.else
+	jr z, spiidle ;this will probably never happen
+	call spipolled
+	jr spiiowt1
+spiidle:
+.endif
 	set 7, a
 	out (PIO_B_DATA), a	;indicate that i/o is ongoing
 	; set up alternate registers for NMI handling
@@ -158,6 +189,7 @@ spiiowt1:
 	ld b, 17		;NMI counter, 2 * 8 pulses
 				;+ 1 NMI before & the byte
 	exx
+.if SPINMI
 	; start CTC2 counter to generate NMIs
 	ld a, 047h		;counter, with time const
 	out (CTC_CH2), a
@@ -165,10 +197,18 @@ spiiowt1:
 				;NMI frequency = 20 kHz
 				;SCK frequency = 10 kHz
 	out (CTC_CH2), a
+.endif
 spiiowt2:
 	in a, (PIO_B_DATA)	;wait until SPI byte i/o is ready
 	bit 7, a
+.if SPINMI
 	jr nz, spiiowt2
+.else
+	jr z, spiready
+	call spipolled
+	jr spiiowt2
+spiready:
+.endif
 	;get recieved byte
 	exx
 	ld a, e			;the recieved byte is in reg E
@@ -177,8 +217,30 @@ spiiowt2:
 	ld b, 0
 	jp c.rets
 
+
 ; I/O C functions for the Z80 Computer
 ;
+.if FASTIO
+
+_in:
+	ld	c, l	;i/o port
+	ld	b, 0
+	in	a, (c)
+	ld	c, a	;byte that was input
+	ld	b, 0
+	ret
+
+_out:
+	ld	c, l    ;i/o port
+	ld	b, 0
+	ld	hl, 2
+	add	hl, sp
+	ld	a, (hl)	;byte to output
+	out	(c), a
+	ret
+
+.else
+
 _in:
 	call	c.savs
 	ld	c,(ix+4)
@@ -195,21 +257,10 @@ _out:
 	out	(c),a
 	jp	c.rets
 
+.endif
+
 _reload:
 	jp 0F003H       ;fixed address in the monitor
-
-; hack to define routines that are used by olib but really belongs in a CP/M library
-
-	.public	__svc
-	.public	__setint
-	.public __ltor
-
-__svc:
-__setint:
-__ltor:
-hackloop:
-    jp hackloop
-
 
 	.end
 

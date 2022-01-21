@@ -10,6 +10,7 @@
 	.external _hwinit
 	.external _main
 	.external __memory
+	.external __toram
 	.public	_exit
 	.public	__text
 	.public	__data
@@ -50,9 +51,16 @@ bssok:
 	add	ix, bc		; ix = end of mem + 8k
 	ld	sp, ix		; init sp
 ;
-;	Initialize hardware
 ;
-	call	_hwinit
+;	Perform ROM to RAM copy
+;   the -dprom option is specified on the compiler command line
+;
+	call	__toram
+;
+;       Initialize hardware
+;
+        call    _hwinit
+;
 ;
 ;	Then call main
 ;
@@ -60,11 +68,13 @@ bssok:
 _exit:				; exit code
 	jr	_exit		; for now loop
 ;
+;
 ;-------------------------------------------------------
 ;	NMI goes here, but first pad to address 0x0066
 nmipad:
 	.byte	0 (066h - (nmipad - __text))
     jp spinmi
+;
 ;
 ;
 	.psect	_data

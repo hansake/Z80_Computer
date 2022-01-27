@@ -1,1 +1,0 @@
-#define SDTEST 1

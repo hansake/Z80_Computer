@@ -36,13 +36,14 @@ c:(e)cpp80	-o (o) -x {lincl?+lincl} {proto?-d_PROTO} \
 
 1:(e)cp180	-o (o) -sr -m {schar?:-u} {std?+std}  \
 		{listcs?-err} {listc? -err > (r).err} \
-	 	{nostrict?-strict} {strict?+strict} \
+		{nostrict?-strict} {strict?+strict} \
 		{xdebug?+xdebug} {dl1?-dl:{dl2?-dl}} \
 		{sprec?-sp} \
 		(i)
  {listc?echo \"\#error cp1(V3.32) (r).c\:0\" >> (r).err}
  {listc?(e)lm -o (r).tmp -err -lt (r).err}
  {listc?(e)prw -err -t (r).c (r).tmp > (r).lst}
+ {listc?rm (r).tmp}
  {listc?mv (r).err (r).tmp}
 
 2:(e)cp280	-o (o) -x6 {64180?-h64180} {far?-far} \
@@ -54,21 +55,24 @@ c:(e)cpp80	-o (o) -x {lincl?+lincl} {proto?-d_PROTO} \
 
 3:(e)cp380	-o (o) {noopt?-z} -e -r30 (i)
  {listcs?(e)lm -o (r).tmp -err -lt -c \";\" (o)}
- {listcs?mv (r).tmp (o) }
+ {listcs?rm (o) }
+ {listcs?cp -f (r).tmp (o) }
+ {listcs?rm (r).tmp }
 
 s:(e)x80	-o (o) {listcs?+l >(r).ls} (i)
 
-o::echo		 -o (o) {prom?+h} > (r).lnk
+o::echo		-o (o) {prom?+h} > (r).lnk
  echo		{map?+map=(r).map} \
 		+text -b0x0000 \
-		+data -b0x8000 \
- 		Crts{prom?rom}.o (i) >> (r).lnk
+		+data -b0x8000 >> (r).lnk
+ echo		Crts{prom?rom}.o (i) >> (r).lnk
  echo		{float?(l)lib{sprec?f:d}.{64180?1:z}80} \
 		(l)libi.{64180?1:z}80 \
- 		(l)libm.{64180?1:z}80 >> (r).lnk
+		(l)libm.{64180?1:z}80 >> (r).lnk
  echo		+def __romdata=__text__ +def __memory=__bss__  >> (r).lnk
  (e)lnk80 < (r).lnk
  {prom?(e)toprom -o (r).prm (r).80}
+ {prom?rm (r).80}
  {prom?mv (r).prm (r).80}
  {savlnk?:rm	(r).lnk}
 80:

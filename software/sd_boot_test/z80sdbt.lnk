@@ -1,0 +1,5 @@
+-o z80sdbt.80 +h
++map=z80sdbt.map +text -b0x0000 +data -b0x8000
+Crtsrom.o z80aio.o z80cio.o z80sdbt.o
+/opt/wsl/lib/z80/libi.z80 /opt/wsl/lib/z80/libm.z80
++def __romdata=__text__ +def __memory=__bss__

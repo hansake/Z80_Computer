@@ -1,0 +1,133 @@
+Z80 Computer hardware initialized                                               
+                                                                                
+z80sdbt version 0.7, Built 2022-01-27 14:57                                     
+cmd (? for help):  i - initialize SD card - ok                                  
+cmd (? for help):  s - print SD registers                                       
+SD card information:  SD card ver. 2+, Block address                            
+  Manufacturer ID: 0x27, OEM ID: PH, Product name: SD16G                        
+  Product revision: 6.0, Serial number: 3157196800                              
+  Manufacturing date: 2020-11, Device capacity: 14768 MByte                     
+cmd (? for help):  l - print partition layout                                   
+      Disk partition sectors on SD card                                         
+       MBR disk identifier: 0x00000000                                          
+ Disk     Start      End     Size Part Type Id                                  
+ ----     -----      ---     ---- ---- ---- --                                  
+ 1 (A)     2048    67583    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 2 (B)*   67584   133119    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 3 (C)   133120   198655    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 4 (D)   198656   264191    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 5 (E)   264192   329727    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 6 (F)   329728   395263    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 7 (G)   395264   460799    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 8 (H)   460800   526335    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+-------> Changed the SD card here <-------
+cmd (? for help):  i - initialize SD card - ok                                  
+cmd (? for help):  s - print SD registers                                       
+SD card information:  SD card ver. 2+, Block address                            
+  Manufacturer ID: 0x03, OEM ID: SD, Product name: SC32G                        
+  Product revision: 8.0, Serial number: 3593863168                              
+  Manufacturing date: 2019-2, Device capacity: 30436 MByte                      
+cmd (? for help):  l - print partition layout                                   
+      Disk partition sectors on SD card                                         
+       MBR disk identifier: 0x5128be70                                          
+ Disk     Start      End     Size Part Type Id                                  
+ ----     -----      ---     ---- ---- ---- --                                  
+ 1 (A)*    2048    67583    65536  MBR Code 0x5f                                
+ 2 (B)    67584   133119    65536  MBR CP/M 0x52                                
+ 3 (C)   133120  8521727  8388608  EBR container                                
+ 4 (D)  8521728  8587263    65536  MBR CP/M 0x52                                
+ 5 (E)   135168   200703    65536  EBR CP/M 0x52                                
+ 6 (F)   202752   268287    65536  EBR CP/M 0x52                                
+cmd (? for help):  d - toggle debug flag - ON                                   
+cmd (? for help):  i - initialize SD card                                       
+Sent 8*8 (72) clock pulses, select not active                                   
+CMD0: GO_IDLE_STATE, R1 response [01]                                           
+CMD8: SEND_IF_COND, R7 response [01 00 00 01 aa], echo back ok, SD ver 2        
+CMD55: APP_CMD, R1 response [01]                                                
+ACMD41: SEND_OP_COND, R1 response [01]                                          
+CMD55: APP_CMD, R1 response [01]                                                
+ACMD41: SEND_OP_COND, R1 response [00] - ready                                  
+CMD58: READ_OCR, R3 response [00 c0 ff 80 00]                                   
+CMD10: SEND_CID, R1 response [00]                                               
+  CID: [03 53 44 53 43 33 32 47 80 c8 f8 d6 36 01 32 e1] |.SDSC32G....6.2.|     
+CRC7 ok: [e1]                                                                   
+CMD9: SEND_CSD, R1 response [00]                                                
+  CSD: [40 0e 00 32 5b 59 00 00 ed c8 7f 80 0a 40 40 c3] |@..2[Y.......@@.|     
+CRC7 ok: [c3]                                                                   
+Sent 9*8 (72) clock pulses, select active                                       
+ - ok                                                                           
+cmd (? for help):  l - print partition layout                                   
+CMD58: READ_OCR, R3 response [00 c0 ff 80 00]                                   
+Read MBR from sector 0                                                          
+                                                                                
+CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 00]                              
+CMD17 R1 response [00]                                                          
+  read data block 0:                                                            
+  disk identifier: 0x5128be70                                                   
+MBR partition entry 1: Boot indicator: 0x80, System ID: 0x5f                    
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 2048 [00000800]                                          
+  partition size LBA: 65536 [00010000], 32 MByte                                
+MBR partition entry 2: Boot indicator: 0x00, System ID: 0x52                    
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 67584 [00010800]                                         
+  partition size LBA: 65536 [00010000], 32 MByte                                
+MBR partition entry 3: Boot indicator: 0x00, System ID: 0x05                    
+  Extended partition entry                                                      
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 133120 [00020800]                                        
+  partition size LBA: 8388608 [00800000], 4096 MByte                            
+MBR partition entry 4: Boot indicator: 0x00, System ID: 0x52                    
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 8521728 [00820800]                                       
+  partition size LBA: 65536 [00010000], 32 MByte                                
+                                                                                
+CMD17: READ_SINGLE_BLOCK, command [51 00 02 08 00]                              
+CMD17 R1 response [00]                                                          
+  read data block 133120:                                                       
+EBR partition entry 1: Boot indicator: 0x00, System ID: 0x52                    
+  begin CHS: 0x00-0x01-0x40 (cyl: 64, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x3f (cyl: 63, head: 3 sector: 16)                          
+  partition start LBA: 135168 [00021000]                                        
+  partition size LBA: 65536 [00010000], 32 MByte                                
+EBR partition entry 2: Boot indicator: 0x00, System ID: 0x05                    
+  Extended partition entry                                                      
+  begin CHS: 0x00-0x01-0x40 (cyl: 64, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x5f (cyl: 95, head: 3 sector: 16)                          
+  partition start LBA: 200704 [00031000]                                        
+  partition size LBA: 67584 [00010800], 33 MByte                                
+EBR chain                                                                       
+                                                                                
+CMD17: READ_SINGLE_BLOCK, command [51 00 03 10 00]                              
+CMD17 R1 response [00]                                                          
+  read data block 200704:                                                       
+EBR chained  partition entry 1: Boot indicator: 0x00, System ID: 0x52           
+  begin CHS: 0x00-0x01-0x60 (cyl: 96, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x5f (cyl: 95, head: 3 sector: 16)                          
+  partition start LBA: 202752 [00031800]                                        
+  partition size LBA: 65536 [00010000], 32 MByte                                
+EBR chained  partition entry 2: Not used entry                                  
+EBR chained  partition entry 3: Not used entry                                  
+EBR chained  partition entry 4: Not used entry                                  
+EBR partition entry 3: Not used entry                                           
+Empty partition entry                                                           
+EBR partition entry 4: Not used entry                                           
+Empty partition entry                                                           
+      Disk partition sectors on SD card                                         
+       MBR disk identifier: 0x5128be70                                          
+ Disk     Start      End     Size Part Type Id                                  
+ ----     -----      ---     ---- ---- ---- --                                  
+ 1 (A)*    2048    67583    65536  MBR Code 0x5f                                
+ 2 (B)    67584   133119    65536  MBR CP/M 0x52                                
+ 3 (C)   133120  8521727  8388608  EBR container                                
+ 4 (D)  8521728  8587263    65536  MBR CP/M 0x52                                
+ 5 (E)   135168   200703    65536  EBR CP/M 0x52                                
+ 6 (F)   202752   268287    65536  EBR CP/M 0x52                                
+cmd (? for help):  d - toggle debug flag - OFF                                  
+-------> Removed the SD card here <-------
+cmd (? for help):  i - initialize SD card - not inserted or faulty  
+cmd (? for help): 

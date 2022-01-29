@@ -1,0 +1,2 @@
+bintoc: bintoc.c
+

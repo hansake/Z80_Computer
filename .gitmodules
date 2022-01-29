@@ -1,0 +1,6 @@
+[submodule "software/tools/software/tools/z80asm"]
+	path = software/tools/software/tools/z80asm
+	url = https://github.com/AlbertVeli/z80asm.git
+[submodule "software/tools/z80asm"]
+	path = software/tools/z80asm
+	url = https://github.com/AlbertVeli/z80asm.git

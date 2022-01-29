@@ -21,6 +21,7 @@ void hwinit()
     ctc_init();
     sio_init();
     pio_init();
+    printf("\n=================================\n");
     printf("Z80 Computer hardware initialized\n");
     ledoff();
     }

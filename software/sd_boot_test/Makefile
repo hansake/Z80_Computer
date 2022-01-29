@@ -22,10 +22,10 @@ z80cio.o: z80cio.c
 	$(EXECDIR)cx80 -proto $(PROTO) $(ARGS) -I "|/opt/wsl/include/v30/" -dlistcs -dnostrict -s +o $<
 
 z80sdbt.o: z80sdbt.c
-	date +'const char builddate[] = "Built %F %R";' > builddate.h
+	date +'const char builddate[] = "built %F %R";' > builddate.h
 	$(EXECDIR)cx80 -proto $(PROTO) $(ARGS) -I "|/opt/wsl/include/v30/" -dlistcs -dnostrict -s +o $<
 
-z80sdbt.80: z80aio.o z80cio.o z80sdbt.o
+z80sdbt.80: z80aio.o z80cio.o z80sdbt.o z80upload.o
 	$(EXECDIR)cx80 -proto $(PROTO) $(ARGS) -L$(LIBDIR) -o $@ -v -dmap $^
 
 z80sdbt.bin: z80sdbt.80
@@ -41,3 +41,13 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGET)
+
+# Uploader
+z80upload.bin: z80upload.z80
+	$(EXECDIR)z80asm --list=z80upload.lst --output=z80upload.bin z80upload.z80
+
+z80upload.o: z80upload.c
+	$(EXECDIR)cx80 -proto $(PROTO) $(ARGS) -I "|/opt/wsl/include/v30/" -dlistcs -dnostrict -s +o $<
+
+z80upload.c: z80upload.bin
+	$(EXECDIR)bintoc -v -n upload -o $@ $^

@@ -28,6 +28,7 @@
 
 	.public	_out
 	.public	_in
+	.public _jumpto
 	.public _reload
 
 ;-------------------------------------------------------
@@ -258,6 +259,9 @@ _out:
 	jp	c.rets
 
 .endif
+
+_jumpto:
+	jp (hl)		;jump to address
 
 _reload:
 	jp 0F003H       ;fixed address in the monitor

@@ -1,0 +1,533 @@
+; z80upload.z80
+;
+; Uploader for my DIY Z80 computer. This program
+; can upload files to memory using Xmodem,
+; execute the uploaded program and reboot.
+;
+; You are free to use, modify, and redistribute
+; this source code. The software is provided "as is",
+; without warranty of any kind.
+; Hastily Cobbled Together 2021 and 2022
+; by Hans-Ake Lund.
+;
+; The program is copied from EPROM
+; into high memory and executed there.
+
+; The uploader program is copied to high RAM where it is executed
+MONADR: equ 0xf000
+
+; Character definitions
+;
+EOS:		equ 0x00	; End Of String
+CR:		equ 0x0d	; Carriage Return (ENTER)
+LF:		equ 0x0a	; Line Feed
+SPACE:		equ 0x20	; Space
+TAB:		equ 0x09	; Tabulator
+SOH:		equ 0x01	; Xmodem start of header
+EOT:		equ 0x04	; Xmodem end of transfer
+ACK:		equ 0x06	; Xmodem ACK
+NAK:		equ 0x15	; Xmodem NAK
+CTRLC:		equ 0x03	; Control-C
+
+; Serial channel timeout loop counter
+GETCTM:	equ 9000		; loop counter for ~1 sec timeout
+
+; Port definitions for switching between low EPROM and RAM
+MEMEPROM:	equ 0x00
+MEMLORAM:	equ 0x04
+
+; Port definitions for the SIO/0 chip
+SIO_BASE:	equ 0x08
+SIO_A_DATA:	equ SIO_BASE + 0 + 0
+SIO_A_CTRL:	equ SIO_BASE + 0 + 2
+SIO_B_DATA:	equ SIO_BASE + 1 + 0
+SIO_B_CTRL:	equ SIO_BASE + 1 + 2
+
+; Port definitions for the CTC chip
+CTC_BASE:	equ 0x0c
+CTC_CH0:	equ CTC_BASE + 0
+CTC_CH1:	equ CTC_BASE + 1
+CTC_CH2:	equ CTC_BASE + 2
+CTC_CH3:	equ CTC_BASE + 3
+
+; Port definitions for the PIO chip
+PIO_BASE:	equ 0x10
+PIO_A_DATA:	equ PIO_BASE + 0 + 0
+PIO_A_CTRL:	equ PIO_BASE + 0 + 2
+PIO_B_DATA:	equ PIO_BASE + 1 + 0
+PIO_B_CTRL:	equ PIO_BASE + 1 + 2
+
+; Port definitions for switching LED off and on
+LEDOFF:		equ 0x14
+LEDON:		equ 0x18
+
+; The program starts here when invoked
+	org MONADR
+monitor:
+	jp startupl
+
+; Fixed address for reload from EPROM: MONADR + 3
+fixedreload:
+	ld a, 00000011b		; sw reset CTC2 to stop NMIs
+	out (CTC_CH2), a
+	out (MEMEPROM), a	; select EPROM in lower 32KB address range
+	jp 0x0000		; and jump to start of EPROM
+
+; Messages to send on serial channels at start and test
+ver_msg:
+        db "z80upload version 2.0"
+	db "\r\n", 0
+
+startupl:
+	; initialize stack pointer below code and flag that upload was done
+	ld sp, MONADR - 2
+    ; the hardware is supposed to be initialized by the
+    ; program that is uploading this code
+	out (LEDOFF),a	; Green LED off
+
+	; Program menu
+menu:
+	di
+
+	out (MEMLORAM),a	; select RAM in lower 32KB address range
+
+	call sel_a_sio
+	ld hl, ver_msg
+	call print_string
+	ld hl, menu_msg
+	call print_string
+	call getc
+	cp 'u'		;upload program to RAM address 0x0000 with Xmodem
+	jp z,upload
+	cp 'g'		;run uploaded progran from RAM address 0x0000
+	jp z,execute
+	cp CTRLC	;reload from EPROM
+	jp z,reload
+	cp 't'		;hidden command to test serial input delay
+	jp z,cttest
+	jp menu
+
+menu_msg:
+	db "  u - to upload file to RAM address 0x0000 with Xmodem\r\n"
+	db "  g - to execute (go) from RAM address 0x0000\r\n"
+	db "  Ctrl-C to reload monitor from EPROM\r\n"
+	db "->", 0
+
+; Upload file to RAM
+upload:
+	ld hl, upload_msg
+	call print_string
+	
+	out (MEMLORAM),a	; select RAM in lower 32KB address range
+
+; Xmodem recieve file and put in memory
+; protocol description
+;   http://pauillac.inria.fr/~doligez/zmodem/ymodem.txt
+; (much of the code is proudly stolen from PCGET.ASM)
+xupload:
+
+	; gobble up garbage characters from the line
+xpurge:
+	ld b, 1
+	call getct
+	jr c, xrecieve
+	cp CTRLC		;Ctrl-C was recieved
+	jp z, xabort
+	jr xpurge		;loop until sender done
+
+	; Recieve file and put in memory
+xrecieve:
+	ld hl, 0x0000		;where to start putting memory in RAM
+	ld (memptr), hl
+
+	ld a, 0			;initialize last sector number
+	ld (xlsectno), a
+
+	ld a, NAK		;send NAK
+	call putc
+
+	; Recieve header
+xgethdr:
+	ld b, 3			;3 seconds timeout
+	call getct
+	jr nc, xgethchr		;no timeout, identify character in header
+
+	; Header error or timeout
+	; purge input characters and send NAK
+xhdrerr:
+	ld b, 1
+	call getct
+	jr nc, xhdrerr		;loop until sender done
+	ld a, NAK
+	call putc
+	jr xgethdr		;try to get header again
+
+	; Which type of header? SOH, EOT or Ctrl-C to abort
+xgethchr:
+	cp SOH
+	jr z, xgotsoh
+	cp CTRLC
+	jp z, xabort
+	cp EOT
+	jp z, xgoteot
+	jr xhdrerr
+
+	; Got SOH header
+xgotsoh:
+
+	ld b, 1
+	call getct
+	jr c, xhdrerr
+	ld d, a			;sector number
+	ld b, 1
+	call getct
+	jr c, xhdrerr
+	cpl			;complement of block number
+	cp d
+	jr z, xgetsec		;good sector header, get sector
+	jr xhdrerr
+
+	; Get sector and put in temporary buffer
+xgetsec:
+	ld a, d			
+	ld (xcsectno), a	;current sector
+	ld c, 0			;init checksum
+	ld hl, xsectbuf		;temporary buffer for uploaded data
+	ld d, 128		;sector length
+xgetschar:
+	ld b, 1
+	call getct
+	jr c, xhdrerr
+	ld (hl), a		;store byte in memory
+	add c			;calculate checksum
+	ld c, a
+	inc hl
+	dec d
+	jr nz, xgetschar
+
+	; Verify the checksum
+	ld d, c			;verify checksum
+	ld b, 1
+	call getct
+	jr c, xhdrerr
+	cp d
+	jr nz, xhdrerr
+
+	; Check that this sector number is last sector + 1
+	ld a, (xcsectno)
+	ld b, a
+	ld a, (xlsectno)
+	inc a
+	cp b
+	jr z, xwrtsec		;expected sector number ok
+
+	; sender missed last ACK
+	jr xsndack
+
+	; got new sector, write it to memory
+xwrtsec:	
+
+	ld a, (xcsectno)	;update sector number
+	ld (xlsectno), a
+	ld de, (memptr)		;where to put the uploaded data
+	ld hl, xsectbuf		;from the recieve buffer
+	ld bc, 128
+xcpymem:
+	ldir
+	ld (memptr), de		;update the destination in memory
+xsndack:
+	ld a, ACK		;send ACK
+	call putc
+	jp xgethdr		;get next sector
+
+	; Got EOT, upload finished
+xgoteot:
+
+	ld a, ACK
+	call putc
+
+	; put ok indication in memory
+	ld hl, MONADR
+	dec hl
+	ld a, 'K'
+	ld (hl), a
+	dec hl
+	ld a, 'O'
+	ld (hl), a
+	
+	;write message that upload was ok
+	ld hl, upcpl_msg
+	call print_string
+
+	jp menu
+
+xabort:
+	ld hl, uperr_msg	;write message that upload was interrupted
+	call print_string
+	jp menu
+
+upload_msg:
+	db "upload file using Xmodem\r\n", 0
+
+upcpl_msg:
+	db "upload complete\r\n", 0
+
+uperr_msg:
+	db "\r\nupload interrupted\r\n", 0
+
+; Reload monitor from EPROM
+reload:
+	ld hl, reload_msg
+	call print_string
+	out (MEMEPROM), a	; select EPROM in lower 32KB address range
+	jp 0x0000
+
+reload_msg:
+	db "reloading boot code from EPROM\r\n", 0
+
+; Execute code in RAM
+execute:
+	out (MEMLORAM),a	; select RAM in lower 32KB address range
+	ld hl, MONADR		; check if is code uploaded
+	dec hl
+	ld a, (hl)
+	cp 'K'
+	jr nz, noramprog
+	dec hl
+	ld a, (hl)
+	cp 'O'
+	jr nz, noramprog
+	ld hl, execute_msg
+	call print_string
+	jp 0x0000
+noramprog:
+        ld hl, noramprog_msg
+        call print_string
+	jp menu
+
+execute_msg:
+	db "executing code from address 0x0000 in RAM\r\n", 0
+noramprog_msg:
+	db "no program code uploaded in RAM\r\n", 0
+
+; Test serial input timeout
+cttest:
+	ld hl, cttest_msg
+	call print_string
+
+;calibrating the timeout, adjust GETCTM for timeout
+	ld c, '0'
+tstloop:
+	ld a, c
+	call putc
+	ld a, '.'
+	call putc
+	ld b,10		;10 seconds timeout
+	call getct
+	jp nc, cttestend
+	inc c
+	ld a, c
+	cp '9' + 1
+	jr nz, tstloop
+	ld c, '0'
+	ld a, '\r'
+	call putc
+	ld a, '\n'
+	call putc
+	jr tstloop
+cttestend:
+	ld hl, cttestend_msg
+	call print_string
+	jp menu
+
+cttest_msg:
+	db "testing serial input timeout, 10 sec between dots\r\n"
+	db "press any key to stop test\r\n", 0
+cttestend_msg:
+	db " - timeout test ready\r\n", 0
+
+; sel_a_sio: selects SIO channel A for i/o
+; affects: none
+sel_a_sio:
+	push af
+	ld a, SIO_A_DATA
+	ld (sio_data), a
+	ld a, SIO_A_CTRL
+	ld (sio_ctrl), a
+	pop af
+	ret
+
+; sel_b_sio: selects SIO channel B for i/o
+; affects: none
+sel_b_sio:
+	push af
+	ld a, SIO_B_DATA
+	ld (sio_data), a
+	ld a, SIO_B_CTRL
+	ld (sio_ctrl), a
+	pop af
+	ret
+
+; tx_ready: waits for transmitt buffer to become empty
+; affects: none
+sio_tx_ready:
+	push af
+	push bc
+sio_tx_ready_loop:
+	ld a, (sio_ctrl)
+	ld c, a
+	in a, (c)		; read RR0
+	bit 2, a		; check if bit 2 is set
+	jr z, sio_tx_ready_loop	; if no - check again
+	pop bc
+	pop af
+	ret
+
+; rx_ready: waits for a character to become available
+; affects: none
+sio_rx_ready:
+	push af
+	push bc
+sio_rx_ready_loop:	
+	ld a, (sio_ctrl)
+	ld c, a
+	in a, (c)		; read RR0
+	bit 0, a		; check if bit 0 is set
+	jr z, sio_rx_ready_loop	; if no - rx buffer has no data => check again
+	pop bc
+	pop af
+	ret
+
+; sends byte in reg A	
+; affects: none
+putc:
+	push bc
+	push af
+	call sio_tx_ready
+	ld a, (sio_data)
+	ld c, a
+	pop af
+	out (c), a		; write character
+	pop bc
+	ret
+
+; getc: waits for a byte to be available and reads it
+; returns: A - read byte
+getc:
+	push bc
+	call sio_rx_ready	; wait until there is a character
+	ld a, (sio_data)
+	ld c, a
+	in a, (c)		; read character
+	pop bc
+	ret
+
+; getct: waits for a byte to be available with timeout and reads it
+; reg B - timeout in seconds
+; returns:
+;   Carry = 1: timeout, Carry = 0: no timeout
+;   reg A - read byte
+getct:
+	push bc
+	push de
+	ld de, GETCTM
+getcloop:
+	ld a, (sio_ctrl)
+	ld c, a
+	in a, (c)		; read RR0
+	bit 0, a		; check if bit 0 is set
+	jr nz, getchrin		; character available
+	dec de
+	ld a, d
+	or e
+	jr nz, getcloop		; inner loop
+	djnz getcloop		; outer loop, number of seconds
+	jr getcnochr		; timeout
+getchrin:
+	ld a, (sio_data)
+	ld c, a
+	in a, (c)		; read character
+	pop de
+	pop bc
+	scf
+	ccf			; Carry = 0, no timeout
+	ret
+getcnochr:
+	ld a, 0
+	pop de
+	pop bc
+	scf			; Carry = 1, timeout
+	ret
+
+; getkey: gets a byte if available and reads it
+; returns: A - read byte or 0 if no byte available
+getkey:
+	push bc
+	ld a, (sio_ctrl)
+	ld c, a
+	in a, (c)		; read RR0
+	bit 0, a		; check if bit 0 is set
+	jr z, no_key		; if no - rx buffer has no data => return 0
+	ld a, (sio_data)
+	ld c, a
+	in a, (c)		; read character
+	pop bc
+	ret
+no_key:
+	ld a, 0
+	pop bc
+	ret
+
+; print_string: prints a string which starts at adress HL
+; and is terminated by EOS-character
+; affects: none
+print_string:
+	push af
+	push hl
+print_string_1:
+	ld a,(hl)		; load next character
+	cp 0			; is it en End Of String - character?
+	jr z, print_string_2	; yes - return
+	call putc		; no - print character
+	inc hl			; HL++
+	jr print_string_1	; do it again
+print_string_2:
+	pop hl
+	pop af
+	ret
+
+; Variables
+sio_ctrl:
+	db 0
+sio_data:
+	db 0
+pio_out:
+	db 0
+keyin:
+	db 0
+loopcnt:
+	dw 0
+ledblinks:
+	db 0
+delays:
+	db 0
+ramerr:
+	db 0
+tests:
+	db 0
+gotint:
+        db 0
+memptr:
+	dw 0
+
+xcsectno:
+	db 0
+
+xlsectno:
+	db 0
+
+xsectbuf:
+	ds 128
+
+; End of monitor code
+monend:

@@ -1,0 +1,536 @@
+# File z80upload.z80
+0000			; z80upload.z80 
+0000			; 
+0000			; Uploader for my DIY Z80 computer. This program 
+0000			; can upload files to memory using Xmodem, 
+0000			; execute the uploaded program and reboot. 
+0000			; 
+0000			; You are free to use, modify, and redistribute 
+0000			; this source code. The software is provided "as is", 
+0000			; without warranty of any kind. 
+0000			; Hastily Cobbled Together 2021 and 2022 
+0000			; by Hans-Ake Lund. 
+0000			; 
+0000			; The program is copied from EPROM 
+0000			; into high memory and executed there. 
+0000			 
+0000			; The uploader program is copied to high RAM where it is executed 
+0000			MONADR: equ 0xf000 
+0000			 
+0000			; Character definitions 
+0000			; 
+0000			EOS:		equ 0x00	; End Of String 
+0000			CR:		equ 0x0d	; Carriage Return (ENTER) 
+0000			LF:		equ 0x0a	; Line Feed 
+0000			SPACE:		equ 0x20	; Space 
+0000			TAB:		equ 0x09	; Tabulator 
+0000			SOH:		equ 0x01	; Xmodem start of header 
+0000			EOT:		equ 0x04	; Xmodem end of transfer 
+0000			ACK:		equ 0x06	; Xmodem ACK 
+0000			NAK:		equ 0x15	; Xmodem NAK 
+0000			CTRLC:		equ 0x03	; Control-C 
+0000			 
+0000			; Serial channel timeout loop counter 
+0000			GETCTM:	equ 9000		; loop counter for ~1 sec timeout 
+0000			 
+0000			; Port definitions for switching between low EPROM and RAM 
+0000			MEMEPROM:	equ 0x00 
+0000			MEMLORAM:	equ 0x04 
+0000			 
+0000			; Port definitions for the SIO/0 chip 
+0000			SIO_BASE:	equ 0x08 
+0000			SIO_A_DATA:	equ SIO_BASE + 0 + 0 
+0000			SIO_A_CTRL:	equ SIO_BASE + 0 + 2 
+0000			SIO_B_DATA:	equ SIO_BASE + 1 + 0 
+0000			SIO_B_CTRL:	equ SIO_BASE + 1 + 2 
+0000			 
+0000			; Port definitions for the CTC chip 
+0000			CTC_BASE:	equ 0x0c 
+0000			CTC_CH0:	equ CTC_BASE + 0 
+0000			CTC_CH1:	equ CTC_BASE + 1 
+0000			CTC_CH2:	equ CTC_BASE + 2 
+0000			CTC_CH3:	equ CTC_BASE + 3 
+0000			 
+0000			; Port definitions for the PIO chip 
+0000			PIO_BASE:	equ 0x10 
+0000			PIO_A_DATA:	equ PIO_BASE + 0 + 0 
+0000			PIO_A_CTRL:	equ PIO_BASE + 0 + 2 
+0000			PIO_B_DATA:	equ PIO_BASE + 1 + 0 
+0000			PIO_B_CTRL:	equ PIO_BASE + 1 + 2 
+0000			 
+0000			; Port definitions for switching LED off and on 
+0000			LEDOFF:		equ 0x14 
+0000			LEDON:		equ 0x18 
+0000			 
+0000			; The program starts here when invoked 
+0000				org MONADR 
+f000			monitor: 
+f000 c3 24 f0			jp startupl 
+f003			 
+f003			; Fixed address for reload from EPROM: MONADR + 3 
+f003			fixedreload: 
+f003 3e 03			ld a, 00000011b		; sw reset CTC2 to stop NMIs 
+f005 d3 0e			out (CTC_CH2), a 
+f007 d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range 
+f009 c3 00 00			jp 0x0000		; and jump to start of EPROM 
+f00c			 
+f00c			; Messages to send on serial channels at start and test 
+f00c			ver_msg: 
+f00c ..			        db "z80upload version 2.0" 
+f021 .. 00			db "\r\n", 0 
+f024			 
+f024			startupl: 
+f024				; initialize stack pointer below code and flag that upload was done 
+f024 31 fe ef			ld sp, MONADR - 2 
+f027			    ; the hardware is supposed to be initialized by the 
+f027			    ; program that is uploading this code 
+f027 d3 14			out (LEDOFF),a	; Green LED off 
+f029			 
+f029				; Program menu 
+f029			menu: 
+f029 f3				di 
+f02a			 
+f02a d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
+f02c			 
+f02c cd 36 f3			call sel_a_sio 
+f02f 21 0c f0			ld hl, ver_msg 
+f032 cd c8 f3			call print_string 
+f035 21 55 f0			ld hl, menu_msg 
+f038 cd c8 f3			call print_string 
+f03b cd 7c f3			call getc 
+f03e fe 75			cp 'u'		;upload program to RAM address 0x0000 with Xmodem 
+f040 ca e6 f0			jp z,upload 
+f043 fe 67			cp 'g'		;run uploaded progran from RAM address 0x0000 
+f045 ca 27 f2			jp z,execute 
+f048 fe 03			cp CTRLC	;reload from EPROM 
+f04a ca fb f1			jp z,reload 
+f04d fe 74			cp 't'		;hidden command to test serial input delay 
+f04f ca 98 f2			jp z,cttest 
+f052 c3 29 f0			jp menu 
+f055			 
+f055			menu_msg: 
+f055 ..				db "  u - to upload file to RAM address 0x0000 with Xmodem\r\n" 
+f08d ..				db "  g - to execute (go) from RAM address 0x0000\r\n" 
+f0bc ..				db "  Ctrl-C to reload monitor from EPROM\r\n" 
+f0e3 .. 00			db "->", 0 
+f0e6			 
+f0e6			; Upload file to RAM 
+f0e6			upload: 
+f0e6 21 b7 f1			ld hl, upload_msg 
+f0e9 cd c8 f3			call print_string 
+f0ec				 
+f0ec d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
+f0ee			 
+f0ee			; Xmodem recieve file and put in memory 
+f0ee			; protocol description 
+f0ee			;   http://pauillac.inria.fr/~doligez/zmodem/ymodem.txt 
+f0ee			; (much of the code is proudly stolen from PCGET.ASM) 
+f0ee			xupload: 
+f0ee			 
+f0ee				; gobble up garbage characters from the line 
+f0ee			xpurge: 
+f0ee 06 01			ld b, 1 
+f0f0 cd 88 f3			call getct 
+f0f3 38 07			jr c, xrecieve 
+f0f5 fe 03			cp CTRLC		;Ctrl-C was recieved 
+f0f7 ca ae f1			jp z, xabort 
+f0fa 18 f2			jr xpurge		;loop until sender done 
+f0fc			 
+f0fc				; Recieve file and put in memory 
+f0fc			xrecieve: 
+f0fc 21 00 00			ld hl, 0x0000		;where to start putting memory in RAM 
+f0ff 22 e3 f3			ld (memptr), hl 
+f102			 
+f102 3e 00			ld a, 0			;initialize last sector number 
+f104 32 e6 f3			ld (xlsectno), a 
+f107			 
+f107 3e 15			ld a, NAK		;send NAK 
+f109 cd 6e f3			call putc 
+f10c			 
+f10c				; Recieve header 
+f10c			xgethdr: 
+f10c 06 03			ld b, 3			;3 seconds timeout 
+f10e cd 88 f3			call getct 
+f111 30 0e			jr nc, xgethchr		;no timeout, identify character in header 
+f113			 
+f113				; Header error or timeout 
+f113				; purge input characters and send NAK 
+f113			xhdrerr: 
+f113 06 01			ld b, 1 
+f115 cd 88 f3			call getct 
+f118 30 f9			jr nc, xhdrerr		;loop until sender done 
+f11a 3e 15			ld a, NAK 
+f11c cd 6e f3			call putc 
+f11f 18 eb			jr xgethdr		;try to get header again 
+f121			 
+f121				; Which type of header? SOH, EOT or Ctrl-C to abort 
+f121			xgethchr: 
+f121 fe 01			cp SOH 
+f123 28 0c			jr z, xgotsoh 
+f125 fe 03			cp CTRLC 
+f127 ca ae f1			jp z, xabort 
+f12a fe 04			cp EOT 
+f12c ca 95 f1			jp z, xgoteot 
+f12f 18 e2			jr xhdrerr 
+f131			 
+f131				; Got SOH header 
+f131			xgotsoh: 
+f131			 
+f131 06 01			ld b, 1 
+f133 cd 88 f3			call getct 
+f136 38 db			jr c, xhdrerr 
+f138 57				ld d, a			;sector number 
+f139 06 01			ld b, 1 
+f13b cd 88 f3			call getct 
+f13e 38 d3			jr c, xhdrerr 
+f140 2f				cpl			;complement of block number 
+f141 ba				cp d 
+f142 28 02			jr z, xgetsec		;good sector header, get sector 
+f144 18 cd			jr xhdrerr 
+f146			 
+f146				; Get sector and put in temporary buffer 
+f146			xgetsec: 
+f146 7a				ld a, d			 
+f147 32 e5 f3			ld (xcsectno), a	;current sector 
+f14a 0e 00			ld c, 0			;init checksum 
+f14c 21 e7 f3			ld hl, xsectbuf		;temporary buffer for uploaded data 
+f14f 16 80			ld d, 128		;sector length 
+f151			xgetschar: 
+f151 06 01			ld b, 1 
+f153 cd 88 f3			call getct 
+f156 38 bb			jr c, xhdrerr 
+f158 77				ld (hl), a		;store byte in memory 
+f159 81				add c			;calculate checksum 
+f15a 4f				ld c, a 
+f15b 23				inc hl 
+f15c 15				dec d 
+f15d 20 f2			jr nz, xgetschar 
+f15f			 
+f15f				; Verify the checksum 
+f15f 51				ld d, c			;verify checksum 
+f160 06 01			ld b, 1 
+f162 cd 88 f3			call getct 
+f165 38 ac			jr c, xhdrerr 
+f167 ba				cp d 
+f168 20 a9			jr nz, xhdrerr 
+f16a			 
+f16a				; Check that this sector number is last sector + 1 
+f16a 3a e5 f3			ld a, (xcsectno) 
+f16d 47				ld b, a 
+f16e 3a e6 f3			ld a, (xlsectno) 
+f171 3c				inc a 
+f172 b8				cp b 
+f173 28 02			jr z, xwrtsec		;expected sector number ok 
+f175			 
+f175				; sender missed last ACK 
+f175 18 16			jr xsndack 
+f177			 
+f177				; got new sector, write it to memory 
+f177			xwrtsec:	 
+f177			 
+f177 3a e5 f3			ld a, (xcsectno)	;update sector number 
+f17a 32 e6 f3			ld (xlsectno), a 
+f17d ed 5b e3 f3		ld de, (memptr)		;where to put the uploaded data 
+f181 21 e7 f3			ld hl, xsectbuf		;from the recieve buffer 
+f184 01 80 00			ld bc, 128 
+f187			xcpymem: 
+f187 ed b0			ldir 
+f189 ed 53 e3 f3		ld (memptr), de		;update the destination in memory 
+f18d			xsndack: 
+f18d 3e 06			ld a, ACK		;send ACK 
+f18f cd 6e f3			call putc 
+f192 c3 0c f1			jp xgethdr		;get next sector 
+f195			 
+f195				; Got EOT, upload finished 
+f195			xgoteot: 
+f195			 
+f195 3e 06			ld a, ACK 
+f197 cd 6e f3			call putc 
+f19a			 
+f19a				; put ok indication in memory 
+f19a 21 00 f0			ld hl, MONADR 
+f19d 2b				dec hl 
+f19e 3e 4b			ld a, 'K' 
+f1a0 77				ld (hl), a 
+f1a1 2b				dec hl 
+f1a2 3e 4f			ld a, 'O' 
+f1a4 77				ld (hl), a 
+f1a5				 
+f1a5				;write message that upload was ok 
+f1a5 21 d2 f1			ld hl, upcpl_msg 
+f1a8 cd c8 f3			call print_string 
+f1ab			 
+f1ab c3 29 f0			jp menu 
+f1ae			 
+f1ae			xabort: 
+f1ae 21 e4 f1			ld hl, uperr_msg	;write message that upload was interrupted 
+f1b1 cd c8 f3			call print_string 
+f1b4 c3 29 f0			jp menu 
+f1b7			 
+f1b7			upload_msg: 
+f1b7 .. 00			db "upload file using Xmodem\r\n", 0 
+f1d2			 
+f1d2			upcpl_msg: 
+f1d2 .. 00			db "upload complete\r\n", 0 
+f1e4			 
+f1e4			uperr_msg: 
+f1e4 .. 00			db "\r\nupload interrupted\r\n", 0 
+f1fb			 
+f1fb			; Reload monitor from EPROM 
+f1fb			reload: 
+f1fb 21 06 f2			ld hl, reload_msg 
+f1fe cd c8 f3			call print_string 
+f201 d3 00			out (MEMEPROM), a	; select EPROM in lower 32KB address range 
+f203 c3 00 00			jp 0x0000 
+f206			 
+f206			reload_msg: 
+f206 .. 00			db "reloading boot code from EPROM\r\n", 0 
+f227			 
+f227			; Execute code in RAM 
+f227			execute: 
+f227 d3 04			out (MEMLORAM),a	; select RAM in lower 32KB address range 
+f229 21 00 f0			ld hl, MONADR		; check if is code uploaded 
+f22c 2b				dec hl 
+f22d 7e				ld a, (hl) 
+f22e fe 4b			cp 'K' 
+f230 20 0f			jr nz, noramprog 
+f232 2b				dec hl 
+f233 7e				ld a, (hl) 
+f234 fe 4f			cp 'O' 
+f236 20 09			jr nz, noramprog 
+f238 21 4a f2			ld hl, execute_msg 
+f23b cd c8 f3			call print_string 
+f23e c3 00 00			jp 0x0000 
+f241			noramprog: 
+f241 21 76 f2		        ld hl, noramprog_msg 
+f244 cd c8 f3		        call print_string 
+f247 c3 29 f0			jp menu 
+f24a			 
+f24a			execute_msg: 
+f24a .. 00			db "executing code from address 0x0000 in RAM\r\n", 0 
+f276			noramprog_msg: 
+f276 .. 00			db "no program code uploaded in RAM\r\n", 0 
+f298			 
+f298			; Test serial input timeout 
+f298			cttest: 
+f298 21 ce f2			ld hl, cttest_msg 
+f29b cd c8 f3			call print_string 
+f29e			 
+f29e			;calibrating the timeout, adjust GETCTM for timeout 
+f29e 0e 30			ld c, '0' 
+f2a0			tstloop: 
+f2a0 79				ld a, c 
+f2a1 cd 6e f3			call putc 
+f2a4 3e 2e			ld a, '.' 
+f2a6 cd 6e f3			call putc 
+f2a9 06 0a			ld b,10		;10 seconds timeout 
+f2ab cd 88 f3			call getct 
+f2ae d2 c5 f2			jp nc, cttestend 
+f2b1 0c				inc c 
+f2b2 79				ld a, c 
+f2b3 fe 3a			cp '9' + 1 
+f2b5 20 e9			jr nz, tstloop 
+f2b7 0e 30			ld c, '0' 
+f2b9 3e 0d			ld a, '\r' 
+f2bb cd 6e f3			call putc 
+f2be 3e 0a			ld a, '\n' 
+f2c0 cd 6e f3			call putc 
+f2c3 18 db			jr tstloop 
+f2c5			cttestend: 
+f2c5 21 1e f3			ld hl, cttestend_msg 
+f2c8 cd c8 f3			call print_string 
+f2cb c3 29 f0			jp menu 
+f2ce			 
+f2ce			cttest_msg: 
+f2ce ..				db "testing serial input timeout, 10 sec between dots\r\n" 
+f301 .. 00			db "press any key to stop test\r\n", 0 
+f31e			cttestend_msg: 
+f31e .. 00			db " - timeout test ready\r\n", 0 
+f336			 
+f336			; sel_a_sio: selects SIO channel A for i/o 
+f336			; affects: none 
+f336			sel_a_sio: 
+f336 f5				push af 
+f337 3e 08			ld a, SIO_A_DATA 
+f339 32 d9 f3			ld (sio_data), a 
+f33c 3e 0a			ld a, SIO_A_CTRL 
+f33e 32 d8 f3			ld (sio_ctrl), a 
+f341 f1				pop af 
+f342 c9				ret 
+f343			 
+f343			; sel_b_sio: selects SIO channel B for i/o 
+f343			; affects: none 
+f343			sel_b_sio: 
+f343 f5				push af 
+f344 3e 09			ld a, SIO_B_DATA 
+f346 32 d9 f3			ld (sio_data), a 
+f349 3e 0b			ld a, SIO_B_CTRL 
+f34b 32 d8 f3			ld (sio_ctrl), a 
+f34e f1				pop af 
+f34f c9				ret 
+f350			 
+f350			; tx_ready: waits for transmitt buffer to become empty 
+f350			; affects: none 
+f350			sio_tx_ready: 
+f350 f5				push af 
+f351 c5				push bc 
+f352			sio_tx_ready_loop: 
+f352 3a d8 f3			ld a, (sio_ctrl) 
+f355 4f				ld c, a 
+f356 ed 78			in a, (c)		; read RR0 
+f358 cb 57			bit 2, a		; check if bit 2 is set 
+f35a 28 f6			jr z, sio_tx_ready_loop	; if no - check again 
+f35c c1				pop bc 
+f35d f1				pop af 
+f35e c9				ret 
+f35f			 
+f35f			; rx_ready: waits for a character to become available 
+f35f			; affects: none 
+f35f			sio_rx_ready: 
+f35f f5				push af 
+f360 c5				push bc 
+f361			sio_rx_ready_loop:	 
+f361 3a d8 f3			ld a, (sio_ctrl) 
+f364 4f				ld c, a 
+f365 ed 78			in a, (c)		; read RR0 
+f367 cb 47			bit 0, a		; check if bit 0 is set 
+f369 28 f6			jr z, sio_rx_ready_loop	; if no - rx buffer has no data => check again 
+f36b c1				pop bc 
+f36c f1				pop af 
+f36d c9				ret 
+f36e			 
+f36e			; sends byte in reg A	 
+f36e			; affects: none 
+f36e			putc: 
+f36e c5				push bc 
+f36f f5				push af 
+f370 cd 50 f3			call sio_tx_ready 
+f373 3a d9 f3			ld a, (sio_data) 
+f376 4f				ld c, a 
+f377 f1				pop af 
+f378 ed 79			out (c), a		; write character 
+f37a c1				pop bc 
+f37b c9				ret 
+f37c			 
+f37c			; getc: waits for a byte to be available and reads it 
+f37c			; returns: A - read byte 
+f37c			getc: 
+f37c c5				push bc 
+f37d cd 5f f3			call sio_rx_ready	; wait until there is a character 
+f380 3a d9 f3			ld a, (sio_data) 
+f383 4f				ld c, a 
+f384 ed 78			in a, (c)		; read character 
+f386 c1				pop bc 
+f387 c9				ret 
+f388			 
+f388			; getct: waits for a byte to be available with timeout and reads it 
+f388			; reg B - timeout in seconds 
+f388			; returns: 
+f388			;   Carry = 1: timeout, Carry = 0: no timeout 
+f388			;   reg A - read byte 
+f388			getct: 
+f388 c5				push bc 
+f389 d5				push de 
+f38a 11 28 23			ld de, GETCTM 
+f38d			getcloop: 
+f38d 3a d8 f3			ld a, (sio_ctrl) 
+f390 4f				ld c, a 
+f391 ed 78			in a, (c)		; read RR0 
+f393 cb 47			bit 0, a		; check if bit 0 is set 
+f395 20 09			jr nz, getchrin		; character available 
+f397 1b				dec de 
+f398 7a				ld a, d 
+f399 b3				or e 
+f39a 20 f1			jr nz, getcloop		; inner loop 
+f39c 10 ef			djnz getcloop		; outer loop, number of seconds 
+f39e 18 0b			jr getcnochr		; timeout 
+f3a0			getchrin: 
+f3a0 3a d9 f3			ld a, (sio_data) 
+f3a3 4f				ld c, a 
+f3a4 ed 78			in a, (c)		; read character 
+f3a6 d1				pop de 
+f3a7 c1				pop bc 
+f3a8 37				scf 
+f3a9 3f				ccf			; Carry = 0, no timeout 
+f3aa c9				ret 
+f3ab			getcnochr: 
+f3ab 3e 00			ld a, 0 
+f3ad d1				pop de 
+f3ae c1				pop bc 
+f3af 37				scf			; Carry = 1, timeout 
+f3b0 c9				ret 
+f3b1			 
+f3b1			; getkey: gets a byte if available and reads it 
+f3b1			; returns: A - read byte or 0 if no byte available 
+f3b1			getkey: 
+f3b1 c5				push bc 
+f3b2 3a d8 f3			ld a, (sio_ctrl) 
+f3b5 4f				ld c, a 
+f3b6 ed 78			in a, (c)		; read RR0 
+f3b8 cb 47			bit 0, a		; check if bit 0 is set 
+f3ba 28 08			jr z, no_key		; if no - rx buffer has no data => return 0 
+f3bc 3a d9 f3			ld a, (sio_data) 
+f3bf 4f				ld c, a 
+f3c0 ed 78			in a, (c)		; read character 
+f3c2 c1				pop bc 
+f3c3 c9				ret 
+f3c4			no_key: 
+f3c4 3e 00			ld a, 0 
+f3c6 c1				pop bc 
+f3c7 c9				ret 
+f3c8			 
+f3c8			; print_string: prints a string which starts at adress HL 
+f3c8			; and is terminated by EOS-character 
+f3c8			; affects: none 
+f3c8			print_string: 
+f3c8 f5				push af 
+f3c9 e5				push hl 
+f3ca			print_string_1: 
+f3ca 7e				ld a,(hl)		; load next character 
+f3cb fe 00			cp 0			; is it en End Of String - character? 
+f3cd 28 06			jr z, print_string_2	; yes - return 
+f3cf cd 6e f3			call putc		; no - print character 
+f3d2 23				inc hl			; HL++ 
+f3d3 18 f5			jr print_string_1	; do it again 
+f3d5			print_string_2: 
+f3d5 e1				pop hl 
+f3d6 f1				pop af 
+f3d7 c9				ret 
+f3d8			 
+f3d8			; Variables 
+f3d8			sio_ctrl: 
+f3d8 00				db 0 
+f3d9			sio_data: 
+f3d9 00				db 0 
+f3da			pio_out: 
+f3da 00				db 0 
+f3db			keyin: 
+f3db 00				db 0 
+f3dc			loopcnt: 
+f3dc 00 00			dw 0 
+f3de			ledblinks: 
+f3de 00				db 0 
+f3df			delays: 
+f3df 00				db 0 
+f3e0			ramerr: 
+f3e0 00				db 0 
+f3e1			tests: 
+f3e1 00				db 0 
+f3e2			gotint: 
+f3e2 00			        db 0 
+f3e3			memptr: 
+f3e3 00 00			dw 0 
+f3e5			 
+f3e5			xcsectno: 
+f3e5 00				db 0 
+f3e6			 
+f3e6			xlsectno: 
+f3e6 00				db 0 
+f3e7			 
+f3e7			xsectbuf: 
+f3e7 00...			ds 128 
+f467			 
+f467			; End of monitor code 
+f467			monend: 
+# End of file z80upload.z80
+f467

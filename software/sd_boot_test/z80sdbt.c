@@ -1,10 +1,8 @@
-/*  z80sdbt.c Boot and test program trying to make a unified prog.
+/*  z80sdbt.c Boot and SD card test program.
  *
  *  Boot code for my DIY Z80 Computer. This
  *  program is compiled with Whitesmiths/COSMIC
  *  C compiler for Z80.
- *
- *  From this file z80sdtst.c is generated with SDTEST defined.
  *
  *  Initializes the hardware and detects the
  *  presence and partitioning of an attached SD card.
@@ -20,8 +18,12 @@
 #include "z80computer.h"
 #include "builddate.h"
 
-#define PRGNAME "\nz80sdbt "
-#define VERSION "version 0.7, "
+/* Program name and version */
+#define PRGNAME "z80sdbt "
+#define VERSION "version 0.8, "
+/* Address in high RAM where to copy uploader */
+#define UPLADDR 0xf000
+
 /* This code should be cleaned up when
    remaining functions are implemented
  */
@@ -46,6 +48,14 @@ unsigned char dsksign[4]; /* MBR/EBR disk signature */
 
 /* Function prototypes */
 void sdmbrpart(unsigned long);
+
+/* External data */
+extern const char upload[];
+extern const int upload_size;
+
+/* RAM/EPROM probe */
+const int ramprobe = 0;
+int *rampptr;
 
 /* Response length in bytes
  */
@@ -1358,18 +1368,21 @@ int sdmbrentry(unsigned char *partptr)
             }
         else
             {
-            if (partptr[0] & 0x80)
-                dskmap[partdsk].bootable = YES;
-            if (curblkno == 0)
-                dskmap[partdsk].partype = PARTMBR;
-            else
-                dskmap[partdsk].partype = PARTEBR;
-            dskmap[partdsk].dskletter = 'A' + partdsk;
-            dskmap[partdsk].dskstart = curblkno + lbastart;
-            dskmap[partdsk].dskend = curblkno + lbastart + lbasize - 1;
-            dskmap[partdsk].dsksize = lbasize;
-            dskmap[partdsk].dsktype[0] = partptr[4];
-            partdsk++;
+            if (0 < lbasize) /* one more ugly hack to avoid empty partitions */
+                {
+                if (partptr[0] & 0x80)
+                    dskmap[partdsk].bootable = YES;
+                if (curblkno == 0)
+                    dskmap[partdsk].partype = PARTMBR;
+                else
+                    dskmap[partdsk].partype = PARTEBR;
+                dskmap[partdsk].dskletter = 'A' + partdsk;
+                dskmap[partdsk].dskstart = curblkno + lbastart;
+                dskmap[partdsk].dskend = curblkno + lbastart + lbasize - 1;
+                dskmap[partdsk].dsksize = lbasize;
+                dskmap[partdsk].dsktype[0] = partptr[4];
+                partdsk++;
+                }
             }
         }
 
@@ -1566,8 +1579,22 @@ void sdmbrpart(unsigned long sector)
         }
     }
 
-/* Test init, read and partitions on SD card over the SPI interface
- *
+/* Executing in RAM or EPROM
+ */
+void execin()
+    {
+    printf(", executing in: ");
+    rampptr = &ramprobe;
+    *rampptr = 1; /* try to change const */
+    if (ramprobe)
+        printf("RAM\n");
+    else
+        printf("EPROM\n");
+    *rampptr = 0;
+    }
+
+/* Test init, read and partitions on SD card over the SPI interface,
+ * boot from SD card, upload with Xmodem
  */
 int main()
     {
@@ -1587,7 +1614,7 @@ int main()
     printf(PRGNAME);
     printf(VERSION);
     printf(builddate);
-    printf("\n");
+    execin();
     while (YES) /* forever (until Ctrl-C) */
         {
         printf("cmd (? for help): ");
@@ -1600,20 +1627,21 @@ int main()
                 printf(PRGNAME);
                 printf(VERSION);
                 printf(builddate);
-                printf("\nCommands:\n");
+                execin();
+                printf("Commands:\n");
                 printf("  ? - help\n");
                 printf("  b - boot from SD card\n");
                 printf("  d - debug on/off\n");
                 printf("  i - initialize SD card\n");
-                printf("  l - print partition layout\n");
-                printf("  n - set/show block #N to read\n");
-                printf("  p - print block last read/to write\n");
-                printf("  r - read block #N\n");
+                printf("  l - print SD card partition layout\n");
+                printf("  n - set/show sector #N to read/write\n");
+                printf("  p - print sector last read/to write\n");
+                printf("  r - read sector #N\n");
                 printf("  s - print SD registers\n");
                 printf("  t - test probe SD card\n");
-                printf("  u - upload program with Xmodem\n");
-                printf("  w - read block #N\n");
-                printf("  Ctrl-C to reload monitor.\n");
+                printf("  u - upload code with Xmodem to RAM address 0x0000\n");
+                printf("  w - write sector #N\n");
+                printf("  Ctrl-C to reload monitor from EPROM\n");
                 break;
             case 'b':
                 printf(" d - boot from SD card - ");
@@ -1708,7 +1736,7 @@ int main()
                     }
                 break;
             case 'n':
-                printf(" n - block number: ");
+                printf(" n - sector number: ");
                 if (getkline(txtin, sizeof txtin))
                     sscanf(txtin, "%lu", &blockno);
                 else
@@ -1716,11 +1744,11 @@ int main()
                 printf("\n");
                 break;
             case 'p':
-                printf(" p - print data block %lu\n", curblkno);
+                printf(" p - print data sector %lu\n", curblkno);
                 sddatprt(sdrdbuf);
                 break;
             case 'r':
-                printf(" r - read block");
+                printf(" r - read sector");
                 if (!sdprobe())
                     {
                     printf(" - not initialized or inserted or faulty\n");
@@ -1746,11 +1774,17 @@ int main()
                     printf(" - not initialized or inserted or faulty\n");
                 break;
             case 'u':
-                printf(" u - upload with Xmodem - ");
-                printf("implementation ongoing\n");
+                printf(" u - upload with Xmodem\n");
+                if (sdtestflg)
+                    {
+                    printf("Copy from: 0x%04x, to: 0x%04x, size: %d\n",
+                        upload, UPLADDR, upload_size);
+                    } /* sdtestflg */
+                memcpy(UPLADDR, upload, upload_size);
+                jumpto(UPLADDR);
                 break;
             case 'w':
-                printf(" w - write block");
+                printf(" w - write sector");
                 if (!sdprobe())
                     printf(" - not initialized or inserted or faulty\n");
                 if (sdwrite(sdrdbuf, blockno))

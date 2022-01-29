@@ -7,5 +7,5 @@ The "sd_boot_test" directory contains a program that is used to
 Programs can also be uploaded to RAM with Xmodem.
 Eventually this program will also be able to boot from a SD card partition.
 
-The "tools" directory contain source code for programs used to build the 
-Z80 programs.
+The "tools" directory contain source code for "bintoc" and "z80asm" that are
+used to build the Z80 programs.

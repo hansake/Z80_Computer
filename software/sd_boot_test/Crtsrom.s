@@ -11,6 +11,8 @@
 	.external _main
 	.external __memory
 	.external __toram
+	.public	_binsize
+	.public	_binstart
 	.public	_exit
 	.public	__text
 	.public	__data
@@ -22,6 +24,14 @@
 ;
 	.psect	_text
 __text:
+	jp	aftersize	;jump over the size,
+				;also a kind of file signature
+_binsize:
+	.word   0		;the size of the binary file to be patched here
+_binstart:
+	.word	__text		;the start address of this program
+
+aftersize:
 	ld	hl, __memory	; __memory is the end of the bss
 				; it is defined by the link line
 	ld	de, __bss	; __bss is the start of the bss (see below)

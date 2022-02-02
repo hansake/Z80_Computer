@@ -1,14 +1,161 @@
-=================================                                               
-Z80 Computer hardware initialized                                               
-z80sdbt version 0.8, built 2022-01-29 15:27, executing in: EPROM                
-cmd (? for help):  invalid command                                              
-cmd (? for help): reloading monitor from EPROM                                  
+cmd (? for help):  u - upload with Xmodem                                       
+z80upload version 2.0                                                           
+  u - to upload file to RAM address 0x0000 with Xmodem                          
+  g - to execute (go) from RAM address 0x0000                                   
+  Ctrl-C to reload monitor from EPROM                                           
+->upload file using Xmodem                                                      
+ complete                                                                       
+z80upload version 2.0                                                           
+  u - to upload file to RAM address 0x0000 with Xmodem                          
+  g - to execute (go) from RAM address 0x0000                                   
+  Ctrl-C to reload monitor from EPROM                                           
+->executing code from address 0x0000 in RAM                                     
                                                                                 
 =================================                                               
 Z80 Computer hardware initialized                                               
-z80sdbt version 0.8, built 2022-01-29 15:27, executing in: EPROM                
+z80sdbt version 0.9, built 2022-02-02 14:19, executing in: RAM                  
+binsize: 0x75a6 (30118), binstart: 0x0000                                       
+cmd (? for help):  i - initialize SD card - ok                                  
+cmd (? for help):  l - print partition layout                                   
+      Disk partition sectors on SD card                                         
+       MBR disk identifier: 0x00000000                                          
+ Disk     Start      End     Size Part Type Id                                  
+ ----     -----      ---     ---- ---- ---- --                                  
+ 1 (A)     2048    67583    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 2 (B)*   67584   133119    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 3 (C)   133120   198655    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 4 (D)   198656   264191    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 5 (E)   264192   329727    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 6 (F)   329728   395263    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 7 (G)   395264   460799    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+ 8 (H)   460800   526335    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
+cmd (? for help):  i - initialize SD card - ok                                  
+cmd (? for help):  l - print partition layout                                   
+      Disk partition sectors on SD card                                         
+       MBR disk identifier: 0x5128be70                                          
+ Disk     Start      End     Size Part Type Id                                  
+ ----     -----      ---     ---- ---- ---- --                                  
+ 1 (A)*    2048    67583    65536  MBR Code 0x5f                                
+ 2 (B)    67584   133119    65536  MBR CP/M 0x52                                
+ 3 (C)   133120  8521727  8388608  EBR container                                
+ 4 (D)  8521728  8587263    65536  MBR CP/M 0x52                                
+ 5 (E)   135168   200703    65536  EBR CP/M 0x52                                
+ 6 (F)   202752   268287    65536  EBR CP/M 0x52                                
+cmd (? for help):  d - toggle debug flag - ON                                   
+cmd (? for help):  i - initialize SD card                                       
+Sent 8*8 (72) clock pulses, select not active                                   
+CMD0: GO_IDLE_STATE, R1 response [01]                                           
+CMD8: SEND_IF_COND, R7 response [01 00 00 01 aa], echo back ok, SD ver 2        
+CMD55: APP_CMD, R1 response [01]                                                
+ACMD41: SEND_OP_COND, R1 response [01]                                          
+CMD55: APP_CMD, R1 response [01]                                                
+ACMD41: SEND_OP_COND, R1 response [00] - ready                                  
+CMD58: READ_OCR, R3 response [00 c0 ff 80 00]                                   
+CMD10: SEND_CID, R1 response [00]                                               
+  CID: [03 53 44 53 43 33 32 47 80 c8 f8 d6 36 01 32 e1] |.SDSC32G....6.2.|     
+CRC7 ok: [e1]                                                                   
+CMD9: SEND_CSD, R1 response [00]                                                
+  CSD: [40 0e 00 32 5b 59 00 00 ed c8 7f 80 0a 40 40 c3] |@..2[Y.......@@.|     
+CRC7 ok: [c3]                                                                   
+Sent 9*8 (72) clock pulses, select active                                       
+ - ok                                                                           
+cmd (? for help):  s - print SD registers                                       
+SD card information:  SD card ver. 2+, Block address                            
+  Manufacturer ID: 0x03, OEM ID: SD, Product name: SC32G                        
+  Product revision: 8.0, Serial number: 3593863168                              
+  Manufacturing date: 2019-2, Device capacity: 30436 MByte                      
+--------------------------------------                                          
+OCR register:                                                                   
+2.7-2.8V (bit 15) 2.8-2.9V (bit 16) 2.9-3.0V (bit 17) 3.0-3.1V (bit 18)         
+3.1-3.2V (bit 19) 3.2-3.3V (bit 20) 3.3-3.4V (bit 21) 3.4-3.5V (bit 22)         
+3.5-3.6V (bit 23)                                                               
+Card Capacity Status (CCS) (bit 30) set                                         
+  SD Ver.2+, Block address                                                      
+Card power up status bit (busy) (bit 31) set                                    
+--------------------------------------                                          
+CID register:                                                                   
+MID: 0x03, OID: SD, PNM: SC32G, PRV: 8.0, PSN: 3593863643, MDT: 2019-2          
+--------------------------------------                                          
+CSD register:                                                                   
+CSD Version 2.0, High Capacity and Extended Capacity                            
+ Device capacity: 31166976 KByte, 30436 MByte                                   
+--------------------------------------                                          
+cmd (? for help):  l - print partition layout                                   
+CMD58: READ_OCR, R3 response [00 c0 ff 80 00]                                   
+Read MBR from sector 0                                                          
+                                                                                
+CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 00]                              
+CMD17 R1 response [00]                                                          
+  read data block 0:                                                            
+  disk identifier: 0x5128be70                                                   
+MBR partition entry 1: Boot indicator: 0x80, System ID: 0x5f                    
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 2048 [00000800]                                          
+  partition size LBA: 65536 [00010000], 32 MByte                                
+MBR partition entry 2: Boot indicator: 0x00, System ID: 0x52                    
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 67584 [00010800]                                         
+  partition size LBA: 65536 [00010000], 32 MByte                                
+MBR partition entry 3: Boot indicator: 0x00, System ID: 0x05                    
+  Extended partition entry                                                      
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 133120 [00020800]                                        
+  partition size LBA: 8388608 [00800000], 4096 MByte                            
+MBR partition entry 4: Boot indicator: 0x00, System ID: 0x52                    
+  begin CHS: 0x00-0x01-0x20 (cyl: 32, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x1f (cyl: 31, head: 3 sector: 16)                          
+  partition start LBA: 8521728 [00820800]                                       
+  partition size LBA: 65536 [00010000], 32 MByte                                
+                                                                                
+CMD17: READ_SINGLE_BLOCK, command [51 00 02 08 00]                              
+CMD17 R1 response [00]                                                          
+  read data block 133120:                                                       
+EBR partition entry 1: Boot indicator: 0x00, System ID: 0x52                    
+  begin CHS: 0x00-0x01-0x40 (cyl: 64, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x3f (cyl: 63, head: 3 sector: 16)                          
+  partition start LBA: 135168 [00021000]                                        
+  partition size LBA: 65536 [00010000], 32 MByte                                
+EBR partition entry 2: Boot indicator: 0x00, System ID: 0x05                    
+  Extended partition entry                                                      
+  begin CHS: 0x00-0x01-0x40 (cyl: 64, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x5f (cyl: 95, head: 3 sector: 16)                          
+  partition start LBA: 200704 [00031000]                                        
+  partition size LBA: 67584 [00010800], 33 MByte                                
+EBR chain                                                                       
+                                                                                
+CMD17: READ_SINGLE_BLOCK, command [51 00 03 10 00]                              
+CMD17 R1 response [00]                                                          
+  read data block 200704:                                                       
+EBR chained  partition entry 1: Boot indicator: 0x00, System ID: 0x52           
+  begin CHS: 0x00-0x01-0x60 (cyl: 96, head: 0 sector: 1)                        
+  end CHS 0x03-0x10-0x5f (cyl: 95, head: 3 sector: 16)                          
+  partition start LBA: 202752 [00031800]                                        
+  partition size LBA: 65536 [00010000], 32 MByte                                
+EBR chained  partition entry 2: Not used entry                                  
+EBR chained  partition entry 3: Not used entry                                  
+EBR chained  partition entry 4: Not used entry                                  
+EBR partition entry 3: Boot indicator: 0x01, System ID: 0x01                    
+  Unofficial 48 bit LBA Proposed MBR Format, no CHS                             
+  partition start LBA: 200799 [0003105f]                                        
+  partition size LBA: 0 [00000000], 0 MByte                                     
+EBR partition entry 4: Not used entry                                           
+Empty partition entry                                                           
+      Disk partition sectors on SD card                                         
+       MBR disk identifier: 0x5128be70                                          
+ Disk     Start      End     Size Part Type Id                                  
+ ----     -----      ---     ---- ---- ---- --                                  
+ 1 (A)*    2048    67583    65536  MBR Code 0x5f                                
+ 2 (B)    67584   133119    65536  MBR CP/M 0x52                                
+ 3 (C)   133120  8521727  8388608  EBR container                                
+ 4 (D)  8521728  8587263    65536  MBR CP/M 0x52                                
+ 5 (E)   135168   200703    65536  EBR CP/M 0x52                                
+ 6 (F)   202752   268287    65536  EBR CP/M 0x52                                
+cmd (? for help): 
 cmd (? for help):  ? - help                                                     
-z80sdbt version 0.8, built 2022-01-29 15:27, executing in: EPROM                
+z80sdbt version 0.9, built 2022-02-02 14:19, executing in: RAM                  
 Commands:                                                                       
   ? - help                                                                      
   b - boot from SD card                                                         
@@ -23,264 +170,5 @@ Commands:
   u - upload code with Xmodem to RAM address 0x0000                             
   w - write sector #N                                                           
   Ctrl-C to reload monitor from EPROM                                           
-cmd (? for help):  i - initialize SD card - ok                                  
-cmd (? for help):  s - print SD registers                                       
-SD card information:  SD card ver. 2+, Block address                            
-  Manufacturer ID: 0x03, OEM ID: SD, Product name: SC32G                        
-  Product revision: 8.0, Serial number: 3593863168                              
-  Manufacturing date: 2019-2, Device capacity: 30436 MByte                      
-cmd (? for help):  l - print partition layout                                   
-      Disk partition sectors on SD card                                         
-       MBR disk identifier: 0x5128be70                                          
- Disk     Start      End     Size Part Type Id                                  
- ----     -----      ---     ---- ---- ---- --                                  
- 1 (A)*    2048    67583    65536  MBR Code 0x5f                                
- 2 (B)    67584   133119    65536  MBR CP/M 0x52                                
- 3 (C)   133120  8521727  8388608  EBR container                                
- 4 (D)  8521728  8587263    65536  MBR CP/M 0x52                                
- 5 (E)   135168   200703    65536  EBR CP/M 0x52                                
- 6 (F)   202752   268287    65536  EBR CP/M 0x52                                
-cmd (? for help):  i - initialize SD card - ok                                  
-cmd (? for help):  s - print SD registers                                       
-SD card information:  SD card ver. 2+, Block address                            
-  Manufacturer ID: 0x27, OEM ID: PH, Product name: SD16G                        
-  Product revision: 6.0, Serial number: 3157196800                              
-  Manufacturing date: 2020-11, Device capacity: 14768 MByte                     
-cmd (? for help):  l - print partition layout                                   
-      Disk partition sectors on SD card                                         
-       MBR disk identifier: 0x00000000                                          
- Disk     Start      End     Size Part Type Id                                  
- ----     -----      ---     ---- ---- ---- --                                  
- 1 (A)     2048    67583    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 2 (B)*   67584   133119    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 3 (C)   133120   198655    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 4 (D)   198656   264191    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 5 (E)   264192   329727    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 6 (F)   329728   395263    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 7 (G)   395264   460799    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 8 (H)   460800   526335    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
-cmd (? for help):  d - toggle debug flag - ON                                   
-cmd (? for help):  i - initialize SD card                                       
-Sent 8*8 (72) clock pulses, select not active                                   
-CMD0: GO_IDLE_STATE, R1 response [01]                                           
-CMD8: SEND_IF_COND, R7 response [01 00 00 01 aa], echo back ok, SD ver 2        
-CMD55: APP_CMD, R1 response [01]                                                
-ACMD41: SEND_OP_COND, R1 response [01]                                          
-CMD55: APP_CMD, R1 response [01]                                                
-ACMD41: SEND_OP_COND, R1 response [00] - ready                                  
-CMD58: READ_OCR, R3 response [00 c0 ff 80 00]                                   
-CMD10: SEND_CID, R1 response [00]                                               
-  CID: [27 50 48 53 44 31 36 47 60 6c cc bc 2f 01 4b 9b] |'PHSD16G`l../.K.|     
-CRC7 ok: [9b]                                                                   
-CMD9: SEND_CSD, R1 response [00]                                                
-  CSD: [40 0e 00 32 5b 59 00 00 73 5f 7f 80 0a 40 00 25] |@..2[Y..s_...@.%|     
-CRC7 ok: [25]                                                                   
-Sent 9*8 (72) clock pulses, select active                                       
- - ok                                                                           
-cmd (? for help):  s - print SD registers                                       
-SD card information:  SD card ver. 2+, Block address                            
-  Manufacturer ID: 0x27, OEM ID: PH, Product name: SD16G                        
-  Product revision: 6.0, Serial number: 3157196800                              
-  Manufacturing date: 2020-11, Device capacity: 14768 MByte                     
---------------------------------------                                          
-OCR register:                                                                   
-2.7-2.8V (bit 15) 2.8-2.9V (bit 16) 2.9-3.0V (bit 17) 3.0-3.1V (bit 18)         
-3.1-3.2V (bit 19) 3.2-3.3V (bit 20) 3.3-3.4V (bit 21) 3.4-3.5V (bit 22)         
-3.5-3.6V (bit 23)                                                               
-Card Capacity Status (CCS) (bit 30) set                                         
-  SD Ver.2+, Block address                                                      
-Card power up status bit (busy) (bit 31) set                                    
---------------------------------------                                          
-CID register:                                                                   
-MID: 0x27, OID: PH, PNM: SD16G, PRV: 6.0, PSN: 3157197030, MDT: 2020-11         
---------------------------------------                                          
-CSD register:                                                                   
-CSD Version 2.0, High Capacity and Extended Capacity                            
- Device capacity: 15122432 KByte, 14768 MByte                                   
---------------------------------------                                          
-cmd (? for help):  l - print partition layout                                   
-CMD58: READ_OCR, R3 response [00 c0 ff 80 00]                                   
-Read MBR from sector 0                                                          
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 00]                              
-CMD17 R1 response [00]                                                          
-  read data block 0:                                                            
-  disk identifier: 0x00000000                                                   
-MBR partition entry 1: Boot indicator: 0x00, System ID: 0xee                    
-  begin CHS: 0x00-0x02-0x00 (cyl: 0, head: 0 sector: 2)                         
-  end CHS 0xff-0xff-0xff (cyl: 303, head: 255 sector: 63)                       
-  partition start LBA: 1 [00000001]                                             
-  partition size LBA: 30244863 [01cd7fff], 14767 MByte                          
-GTP partitions                                                                  
-GPT header                                                                      
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 01]                              
-CMD17 R1 response [00]                                                          
-  read data block 1:                                                            
-  Signature: EFI PART                                                           
-  Revision: 0.1 [00 00 01 00]                                                   
-  Number of partition entries: 128 (may be actual or maximum)                   
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 02]                              
-CMD17 R1 response [00]                                                          
-  read data block 2:                                                            
-GPT partition entry 1:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 7cbc3dc8-609f-498f-8fac-67e7b36b6fa3                   
-  [c8 3d bc 7c 9f 60 8f 49 8f ac 67 e7 b3 6b 6f a3]                             
-  First LBA: 2048 [00 08 00 00 00 00 00 00]                                     
-  Last LBA: 67583, size 31 MByte [ff 07 01 00 00 00 00 00]                      
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part1                                                        
-   [70 00 61 00 72 00 74 00 31 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-GPT partition entry 2:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 05674b2d-1bb7-4900-bebf-9bb7937bd44c                   
-  [2d 4b 67 05 b7 1b 00 49 be bf 9b b7 93 7b d4 4c]                             
-  First LBA: 67584 [00 08 01 00 00 00 00 00]                                    
-  Last LBA: 133119, size 31 MByte [ff 07 02 00 00 00 00 00]                     
-  Attribute flags: [04 00 00 00 00 00 00 00]                                    
-  Partition name:  part2                                                        
-   [70 00 61 00 72 00 74 00 32 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-GPT partition entry 3:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 3b94f32e-0be8-4e98-936c-e9ce7552f063                   
-  [2e f3 94 3b e8 0b 98 4e 93 6c e9 ce 75 52 f0 63]                             
-  First LBA: 133120 [00 08 02 00 00 00 00 00]                                   
-  Last LBA: 198655, size 31 MByte [ff 07 03 00 00 00 00 00]                     
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part3                                                        
-   [70 00 61 00 72 00 74 00 33 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-GPT partition entry 4:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: e26c584e-fade-446c-85e0-a28d2074bb11                   
-  [4e 58 6c e2 de fa 6c 44 85 e0 a2 8d 20 74 bb 11]                             
-  First LBA: 198656 [00 08 03 00 00 00 00 00]                                   
-  Last LBA: 264191, size 31 MByte [ff 07 04 00 00 00 00 00]                     
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part4                                                        
-   [70 00 61 00 72 00 74 00 34 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 03]                              
-CMD17 R1 response [00]                                                          
-  read data block 3:                                                            
-GPT partition entry 5:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 9f0999f2-2001-4cf2-8d0d-634f39767322                   
-  [f2 99 09 9f 01 20 f2 4c 8d 0d 63 4f 39 76 73 22]                             
-  First LBA: 264192 [00 08 04 00 00 00 00 00]                                   
-  Last LBA: 329727, size 31 MByte [ff 07 05 00 00 00 00 00]                     
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part5                                                        
-   [70 00 61 00 72 00 74 00 35 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-GPT partition entry 6:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 6af9d60f-6e82-4e06-9e5f-a11988da73bd                   
-  [0f d6 f9 6a 82 6e 06 4e 9e 5f a1 19 88 da 73 bd]                             
-  First LBA: 329728 [00 08 05 00 00 00 00 00]                                   
-  Last LBA: 395263, size 31 MByte [ff 07 06 00 00 00 00 00]                     
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part6                                                        
-   [70 00 61 00 72 00 74 00 36 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-GPT partition entry 7:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 4c85af09-d4c9-4ea8-b6f7-76c430c74982                   
-  [09 af 85 4c c9 d4 a8 4e b6 f7 76 c4 30 c7 49 82]                             
-  First LBA: 395264 [00 08 06 00 00 00 00 00]                                   
-  Last LBA: 460799, size 31 MByte [ff 07 07 00 00 00 00 00]                     
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part7                                                        
-   [70 00 61 00 72 00 74 00 37 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-GPT partition entry 8:                                                          
-  Partition type GUID: ac7176fd-8d55-4fff-86a5-a36d6368d0cb                     
-  [fd 76 71 ac 55 8d ff 4f 86 a5 a3 6d 63 68 d0 cb]                             
-  Unique partition GUID: 05155795-1d5d-4a23-aeb8-8d60952e544d                   
-  [95 57 15 05 5d 1d 23 4a ae b8 8d 60 95 2e 54 4d]                             
-  First LBA: 460800 [00 08 07 00 00 00 00 00]                                   
-  Last LBA: 526335, size 31 MByte [ff 07 08 00 00 00 00 00]                     
-  Attribute flags: [00 00 00 00 00 00 00 00]                                    
-  Partition name:  part8                                                        
-   [70 00 61 00 72 00 74 00 38 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00                             
-    00 00 00 00 00 00 00 00]                                                    
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 04]                              
-CMD17 R1 response [00]                                                          
-  read data block 4:                                                            
-GPT partition entry 9: Not used entry                                           
-GPT partition entry 10: Not used entry                                          
-GPT partition entry 11: Not used entry                                          
-GPT partition entry 12: Not used entry                                          
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 05]                              
-CMD17 R1 response [00]                                                          
-  read data block 5:                                                            
-GPT partition entry 13: Not used entry                                          
-GPT partition entry 14: Not used entry                                          
-GPT partition entry 15: Not used entry                                          
-GPT partition entry 16: Not used entry                                          
-First 16 GPT entries scanned                                                    
-                                                                                
-CMD17: READ_SINGLE_BLOCK, command [51 00 00 00 00]                              
-CMD17 R1 response [00]                                                          
-  read data block 0:                                                            
-MBR partition entry 2: Not used entry                                           
-MBR partition entry 3: Not used entry                                           
-MBR partition entry 4: Not used entry                                           
-      Disk partition sectors on SD card                                         
-       MBR disk identifier: 0x00000000                                          
- Disk     Start      End     Size Part Type Id                                  
- ----     -----      ---     ---- ---- ---- --                                  
- 1 (A)     2048    67583    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 2 (B)*   67584   133119    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 3 (C)   133120   198655    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 4 (D)   198656   264191    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 5 (E)   264192   329727    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 6 (F)   329728   395263    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 7 (G)   395264   460799    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
- 8 (H)   460800   526335    65536  GPT CP/M ac7176fd-8d55-4fff-86a5-a36d6368d0cb
-cmd (? for help):  u - upload with Xmodem                                       
-Copy from: 0x521e, to: 0xf000, size: 1127                                       
-z80upload version 2.0                                                           
-  u - to upload file to RAM address 0x0000 with Xmodem                          
-  g - to execute (go) from RAM address 0x0000                                   
-  Ctrl-C to reload monitor from EPROM                                           
-->
+cmd (? for help): 
 

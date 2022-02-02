@@ -20,7 +20,7 @@
 
 /* Program name and version */
 #define PRGNAME "z80sdbt "
-#define VERSION "version 0.8, "
+#define VERSION "version 0.9, "
 /* Address in high RAM where to copy uploader */
 #define UPLADDR 0xf000
 
@@ -52,6 +52,8 @@ void sdmbrpart(unsigned long);
 /* External data */
 extern const char upload[];
 extern const int upload_size;
+extern const int binsize;
+extern const int binstart;
 
 /* RAM/EPROM probe */
 const int ramprobe = 0;
@@ -1615,6 +1617,7 @@ int main()
     printf(VERSION);
     printf(builddate);
     execin();
+    printf("binsize: 0x%04x (%d), binstart: 0x%04x\n", binsize, binsize, binstart);
     while (YES) /* forever (until Ctrl-C) */
         {
         printf("cmd (? for help): ");
@@ -1702,15 +1705,7 @@ int main()
                             if (dskmap[idx].partype == PARTGPT)
                                 {
                                 printf(" GPT ");
-                                /*if (memcmp(dskmap[idx].dsktype, gptcpm, 16) == 0)
-                                  not really working as I expected ? */
-                                cmpptr = dskmap[idx].dsktype;
-                                for (cmpidx = 0; cmpidx < 16; cmpidx++, cmpptr++)
-                                    {
-                                    if (gptcpm[cmpidx] != *cmpptr)
-                                        break;
-                                    }
-                                if (cmpidx == 16)
+                                if (!memcmp(dskmap[idx].dsktype, gptcpm, 16))
                                     printf("CP/M ");
                                 else
                                     printf(" ??  ");

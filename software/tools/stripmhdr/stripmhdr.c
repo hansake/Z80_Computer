@@ -40,7 +40,7 @@ With no FILE, or when FILE is -, read standard input.\n", stdout);
     exit(status);
     }
 
-/* Convert binary file into a C byte array
+/* Strip header from Whitesmiths/COSMIC multi section object file
  */
 int main(int argc, char **argv)
     {
@@ -102,9 +102,8 @@ int main(int argc, char **argv)
     fgetc(infd); /* skip configuration byte */
     hdrlen = fgetc(infd); /* get size of header */
     hdrlen += fgetc(infd) * 256;
-    hdrlen -= 2;
 
-    while (0 <= hdrlen--)
+    while (4 < hdrlen--)
         {
         fgetc(infd);
         if (feof(infd))

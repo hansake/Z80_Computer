@@ -1,0 +1,2 @@
+stripmhdr: stripmhdr.c
+

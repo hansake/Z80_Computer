@@ -1,0 +1,66 @@
+
+
+
+			============================
+			|                          |
+			|      MAP INFORMATION     |
+			|                          |
+			============================
+
+
+
+			============================
+			|                          |
+			|         SEGMENTS         |
+			|                          |
+			============================
+
+
+
+			Segment No. 1	Type: text
+			=============
+
+        start: 0xB000         size: 0x0230         finish: 0xB230
+
+			Segment No. 2	Type: data
+			=============
+
+        start: 0xB230         size: 0x0000         finish: 0xB230
+
+			Segment No. 3	Type: bss
+			=============
+
+        start: 0xB230         size: 0x0000         finish: 0xB230
+
+			Segment No. 4	Type: stack
+			=============
+
+        start: 0xB230         size: 0x0000         finish: 0xB230
+
+
+
+
+			============================
+			|                          |
+			|         MODULES          |
+			|                          |
+			============================
+
+
+
+MODULE: z80upload.o
+		TEXT  at 0xB000 size: 0x0230 
+		DATA  at 0xB230 size: 0x0000 
+		BSS   at 0xB230 size: 0x0000 
+
+
+
+
+			============================
+			|                          |
+			|          SYMBOLS         |
+			|                          |
+			============================
+
+
+

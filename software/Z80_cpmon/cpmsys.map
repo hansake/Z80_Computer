@@ -1,0 +1,326 @@
+
+
+
+			============================
+			|                          |
+			|      MAP INFORMATION     |
+			|                          |
+			============================
+
+
+
+			============================
+			|                          |
+			|         SEGMENTS         |
+			|                          |
+			============================
+
+
+
+			Segment No. 1	Type: text
+			=============
+
+        start: 0xD800         size: 0x0800         finish: 0xE000
+
+			Segment No. 2	Type: text
+			=============
+
+        start: 0xE000         size: 0x0E00         finish: 0xEE00
+
+			Segment No. 3	Type: text
+			=============
+
+        start: 0xEE00         size: 0x0AB3         finish: 0xF8B3
+
+			Segment No. 4	Type: data
+			=============
+
+        start: 0xF8B3         size: 0x0000         finish: 0xF8B3
+
+			Segment No. 5	Type: bss
+			=============
+
+        start: 0xF8B3         size: 0x0235         finish: 0xFAE8
+
+			Segment No. 6	Type: stack
+			=============
+
+        start: 0xF8B3         size: 0x0000         finish: 0xF8B3
+
+
+
+
+			============================
+			|                          |
+			|         MODULES          |
+			|                          |
+			============================
+
+
+
+MODULE: ccp.o
+		TEXT  at 0xD800 size: 0x0800 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xF8B3 size: 0x0000 
+
+MODULE: bdos.o
+		TEXT  at 0xE000 size: 0x0E00 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xF8B3 size: 0x0000 
+
+MODULE: z80bios.o
+		TEXT  at 0xEE00 size: 0x0378 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xF8B3 size: 0x0000 
+
+MODULE: z80sdio.o
+		TEXT  at 0xF178 size: 0x00ED 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xF8B3 size: 0x0000 
+
+MODULE: z80sdbiorw.o
+		TEXT  at 0xF265 size: 0x04BE 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xF8B3 size: 0x0235 
+
+MODULE: memcpy.o(../tools/wsl/lib/z80//libi.z80)
+		TEXT  at 0xF723 size: 0x0018 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xFAE8 size: 0x0000 
+
+MODULE: idiv.o(../tools/wsl/lib/z80//libm.z80)
+		TEXT  at 0xF73B size: 0x009E 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xFAE8 size: 0x0000 
+
+MODULE: ilsh.o(../tools/wsl/lib/z80//libm.z80)
+		TEXT  at 0xF7D9 size: 0x006F 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xFAE8 size: 0x0000 
+
+MODULE: imulz80.o(../tools/wsl/lib/z80//libm.z80)
+		TEXT  at 0xF848 size: 0x002F 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xFAE8 size: 0x0000 
+
+MODULE: savs.o(../tools/wsl/lib/z80//libm.z80)
+		TEXT  at 0xF877 size: 0x0015 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xFAE8 size: 0x0000 
+
+MODULE: zret.o(../tools/wsl/lib/z80//libm.z80)
+		TEXT  at 0xF88C size: 0x0027 
+		DATA  at 0xF8B3 size: 0x0000 
+		BSS   at 0xFAE8 size: 0x0000 
+
+
+
+
+			============================
+			|                          |
+			|          SYMBOLS         |
+			|                          |
+			============================
+
+
+
+ccp PUBLIC  at 0xD800 in text section  of Segment No. 1
+	defined in:    command line
+	referenced in: z80bios.o bdos.o ccp.o
+HOME PUBLIC  at 0xEE18 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+LIST PUBLIC  at 0xEE0F in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+READ PUBLIC  at 0xEE27 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+_spt PUBLIC  at 0xEE8D in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: z80sdbiorw.o
+bdos PUBLIC  at 0xE000 in text section  of Segment No. 2
+	defined in:    command line
+	referenced in: z80bios.o bdos.o ccp.o
+bios PUBLIC  at 0xEE00 in text section  of Segment No. 3
+	defined in:    command line
+	referenced in: z80bios.o bdos.o ccp.o
+CBOOT PUBLIC  at 0xEE00 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+CONIN PUBLIC  at 0xEE09 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+CONST PUBLIC  at 0xEE06 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+FBASE PUBLIC  at 0xE006 in text section  of Segment No. 2
+	defined in:    bdos.o
+	referenced in: z80bios.o
+PUNCH PUBLIC  at 0xEE12 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+WBOOT PUBLIC  at 0xEE03 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+WRITE PUBLIC  at 0xEE2A in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+c.ihl PUBLIC  at 0xF884 in text section  of Segment No. 3
+	defined in:    savs.o(../tools/wsl/lib/z80//libm.z80)
+dirbf PUBLIC  at 0xEFB8 in text section  of Segment No. 3
+	defined in:    z80bios.o
+CONOUT PUBLIC  at 0xEE0C in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+LISTST PUBLIC  at 0xEE2D in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+READER PUBLIC  at 0xEE15 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+SECTRN PUBLIC  at 0xEE30 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+SELDSK PUBLIC  at 0xEE1B in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+SETDMA PUBLIC  at 0xEE24 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+SETSEC PUBLIC  at 0xEE21 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+SETTRK PUBLIC  at 0xEE1E in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: bdos.o
+_cmd17 PUBLIC  at 0xF265 in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+_cmd24 PUBLIC  at 0xF26B in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+_dmaad PUBLIC  at 0xEFB5 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: z80sdbiorw.o
+_rbyte PUBLIC  at 0xFADB in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_spiio PUBLIC  at 0xF1DC in text section  of Segment No. 3
+	defined in:    z80sdio.o
+	referenced in: z80sdbiorw.o
+_track PUBLIC  at 0xEFB1 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: z80sdbiorw.o
+_tries PUBLIC  at 0xFAC9 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+c.idiv PUBLIC  at 0xF73B in text section  of Segment No. 3
+	defined in:    idiv.o(../tools/wsl/lib/z80//libm.z80)
+c.ilsh PUBLIC  at 0xF7D9 in text section  of Segment No. 3
+	defined in:    ilsh.o(../tools/wsl/lib/z80//libm.z80)
+c.imod PUBLIC  at 0xF761 in text section  of Segment No. 3
+	defined in:    idiv.o(../tools/wsl/lib/z80//libm.z80)
+c.imul PUBLIC  at 0xF848 in text section  of Segment No. 3
+	defined in:    imulz80.o(../tools/wsl/lib/z80//libm.z80)
+	referenced in: z80sdbiorw.o
+c.irsh PUBLIC  at 0xF7F9 in text section  of Segment No. 3
+	defined in:    ilsh.o(../tools/wsl/lib/z80//libm.z80)
+c.lret PUBLIC  at 0xF88C in text section  of Segment No. 3
+	defined in:    zret.o(../tools/wsl/lib/z80//libm.z80)
+	referenced in: imulz80.o(../tools/wsl/lib/z80//libm.z80) ilsh.o(../tools/wsl/lib/z80//libm.z80) idiv.o(../tools/wsl/lib/z80//libm.z80)
+c.rets PUBLIC  at 0xF885 in text section  of Segment No. 3
+	defined in:    savs.o(../tools/wsl/lib/z80//libm.z80)
+	referenced in: z80sdbiorw.o z80sdio.o
+c.savs PUBLIC  at 0xF877 in text section  of Segment No. 3
+	defined in:    savs.o(../tools/wsl/lib/z80//libm.z80)
+	referenced in: z80sdbiorw.o z80sdio.o
+c.udiv PUBLIC  at 0xF787 in text section  of Segment No. 3
+	defined in:    idiv.o(../tools/wsl/lib/z80//libm.z80)
+	referenced in: z80sdbiorw.o
+c.umod PUBLIC  at 0xF78F in text section  of Segment No. 3
+	defined in:    idiv.o(../tools/wsl/lib/z80//libm.z80)
+c.ursh PUBLIC  at 0xF81C in text section  of Segment No. 3
+	defined in:    ilsh.o(../tools/wsl/lib/z80//libm.z80)
+	referenced in: z80sdbiorw.o
+c.zret PUBLIC  at 0xF89B in text section  of Segment No. 3
+	defined in:    zret.o(../tools/wsl/lib/z80//libm.z80)
+spinmi PUBLIC  at 0xF178 in text section  of Segment No. 3
+	defined in:    z80sdio.o
+_addblk PUBLIC  at 0xF22C in text section  of Segment No. 3
+	defined in:    z80sdio.o
+	referenced in: z80sdbiorw.o
+_cmdbuf PUBLIC  at 0xFAD6 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_diskno PUBLIC  at 0xEFB7 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: z80sdbiorw.o
+_hstbuf PUBLIC  at 0xF8BF in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_jumpto PUBLIC  at 0xF226 in text section  of Segment No. 3
+	defined in:    z80sdio.o
+_memcpy PUBLIC  at 0xF723 in text section  of Segment No. 3
+	defined in:    memcpy.o(../tools/wsl/lib/z80//libi.z80)
+	referenced in: z80sdbiorw.o
+_nbytes PUBLIC  at 0xFACD in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_parptr PUBLIC  at 0xFAE2 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_prtbuf PUBLIC  at 0xFABF in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_reload PUBLIC  at 0xF227 in text section  of Segment No. 3
+	defined in:    z80sdio.o
+_retptr PUBLIC  at 0xFADC in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_sdread PUBLIC  at 0xF33D in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+_sector PUBLIC  at 0xEFB3 in text section  of Segment No. 3
+	defined in:    z80bios.o
+	referenced in: z80sdbiorw.o
+_ui2blk PUBLIC  at 0xF575 in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+_allzero PUBLIC  at 0xFACB in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_rdsdsec PUBLIC  at 0xF5C2 in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+	referenced in: z80bios.o
+_sdwrite PUBLIC  at 0xF438 in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+_searchn PUBLIC  at 0xFAE0 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_spiinit PUBLIC  at 0xF1B1 in text section  of Segment No. 3
+	defined in:    z80sdio.o
+_statptr PUBLIC  at 0xFACF in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_wrsdsec PUBLIC  at 0xF669 in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+	referenced in: z80bios.o
+mprobini PUBLIC  at 0xF249 in text section  of Segment No. 3
+	defined in:    z80sdio.o
+	referenced in: z80bios.o
+BDOSSTART PUBLIC  at 0xE000 in text section  of Segment No. 2
+	defined in:    bdos.o
+	referenced in: ccp.o
+_blk2byte PUBLIC  at 0xF20B in text section  of Segment No. 3
+	defined in:    z80sdio.o
+	referenced in: z80sdbiorw.o
+_rstatbuf PUBLIC  at 0xFAD1 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_sdcbytes PUBLIC  at 0xFADE in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_sddskblk PUBLIC  at 0xF8B7 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_sdinitok PUBLIC  at 0xFAE4 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_lbacpmsec PUBLIC  at 0xF8BD in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_lbahstblk PUBLIC  at 0xF8BB in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_sdcardblk PUBLIC  at 0xF8B3 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_sdcommand PUBLIC  at 0xF271 in text section  of Segment No. 3
+	defined in:    z80sdbiorw.o
+_spiselect PUBLIC  at 0xF1CE in text section  of Segment No. 3
+	defined in:    z80sdio.o
+	referenced in: z80sdbiorw.o
+_byteblkadr PUBLIC  at 0xFAE6 in bss  section  of Segment No. 5
+	defined in:    z80sdbiorw.o
+_spideselect PUBLIC  at 0xF1D5 in text section  of Segment No. 3
+	defined in:    z80sdio.o
+	referenced in: z80sdbiorw.o

@@ -1,0 +1,5 @@
+-o z80cpmon.80 +h
++map=z80cpmon.map +text -b0x0000 +data -b0x8000
+Crtsrom.o z80aio.o z80cio.o z80sdasm.o z80sddrv.o z80sdrdwr.o z80sddrvprt.o z80sdpart.o z80sdparprt.o z80cpmon.o z80uplbinc.o builddate.o cpmsys.o
+../tools/wsl/lib/z80/libi.z80 ../tools/wsl/lib/z80/libm.z80
++def __romdata=__text__ +def __memory=__bss__

@@ -1,6 +1,6 @@
 The "Z80_cpmon" directory contains a monitor that was used to develop
-a SPI/SD card interface that was used to develop a BIOS for CP/M.
-The monitor can also load a copy of CP/M 2.2 from EPROM.
+a SPI/SD card interface for a BIOS for CP/M.
+The monitor can load a copy of CP/M 2.2 from EPROM.
 
 ```
 =================================

@@ -28,3 +28,5 @@ New hardware and software functions has been added:
 - A test program to verify the operation of the board is also available.
 - Also a simple monitor with Xmodem upload to RAM was added.
 - An interface to a microSD memory card using SPI was added, also a test program for this interface is now added.
+
+CP/M is running on this computer.

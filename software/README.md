@@ -64,5 +64,7 @@ The "sd_boot_test" directory contains a program that is used to
 Programs can also be uploaded to RAM with Xmodem.
 Eventually this program will also be able to boot from a SD card partition.
 
+The transfer speed of the SPI interface is 976 bytes per second (i.e. 7811 bits per second). 
+
 The "tools" directory contain source code for "bintoc" and "z80asm" that are
 used to build the Z80 programs.
